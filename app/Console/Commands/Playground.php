@@ -57,7 +57,8 @@ class Playground extends Command
                 'hostname' => $system['hostname'],
                 'os_name' => null,
                 'updates_available' => null,
-                'uptime' => null
+                'uptime' => null,
+                'ip_addresses' => null
             );
 
             // Find out os name
@@ -67,7 +68,7 @@ class Playground extends Command
                 $result['os_name'] = 'Arch Linux';
             }
 
-            // Find out uptime
+            // Find out uptime and ip addresses
             if(collect(['Debian', 'Arch Linux'])->contains($result['os_name'])) {
                 $process = Ssh::create($system['user'], $system['hostname'])
                     ->usePassword($system['password'])
@@ -75,7 +76,16 @@ class Playground extends Command
                     ->execute('uptime --pretty');
 
                 if($process->isSuccessful()) {
-                    $result['uptime'] = $process->getOutput();
+                    $result['uptime'] = Str::replace("\n", '', $process->getOutput());
+                }
+
+                $process = Ssh::create($system['user'], $system['hostname'])
+                    ->usePassword($system['password'])
+                    ->disableStrictHostKeyChecking()
+                    ->execute("ip addr | grep \"inet \" | grep -v 'inet 127.0.0.1' | awk '{print $2}'");
+
+                if($process->isSuccessful()) {
+                    $result['ip_addresses'] = Str::of($process->getOutput())->explode("\n")->slice(0, -1)->toArray();
                 }
             }
 
@@ -93,6 +103,7 @@ class Playground extends Command
             }
 
             echo 'System "' . $result['hostname'] . '": OS found is ' . $result['os_name'] . ", updates avail.: " . $result['updates_available'] . ", uptime: " . $result['uptime'] . "\n";
+            dd($result);
         }
     }
 }
