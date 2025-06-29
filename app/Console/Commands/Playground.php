@@ -35,17 +35,29 @@ class Playground extends Command
                 'auth_method' => 'password',
                 'password' => '123'
             ],
-            // [
-            //     'user' => 'root',
-            //     'hostname' => 'sorriso.cloud',
-            //     'auth_method' => 'ssh_private_key',
-            //     'ssh_private_key_path' => ''
-            // ]
+            [
+                'user' => 'root',
+                'hostname' => 'sorriso.cloud',
+                'auth_method' => 'ssh_private_key',
+                'ssh_private_key_path' => ''
+            ]
         ];
 
         $results = array();
 
         foreach($systems as $system) {
+            // Start gathering results about the host
+            $result = array(
+                'ran_as_user' => $system['user'],
+                'auth_method' => $system['auth_method'],
+                'connected_successfully' => false,
+                'hostname' => $system['hostname'],
+                'os_name' => null,
+                'updates_available' => null,
+                'uptime' => null,
+                'ip_addresses' => null
+            );
+
             $process = Ssh::create($system['user'], $system['hostname'])
                 ->disableStrictHostKeyChecking();
 
@@ -62,20 +74,13 @@ class Playground extends Command
 
             if(!$request->isSuccessful()) {
                 echo 'System ' . $system['hostname'] . " encountered an error, skipping...\n";
-                continue;
+                $results[] = $result;
+
+                continue; // Skip to next
             }
 
+            $result['connected_successfully'] = true;
             $output = $request->getOutput();
-
-            // Start gathering results about the host
-            $result = array(
-                'ran_as_user' => $system['user'],
-                'hostname' => $system['hostname'],
-                'os_name' => null,
-                'updates_available' => null,
-                'uptime' => null,
-                'ip_addresses' => null
-            );
 
             // Find out os name
             if (Str::contains($output, 'Debian')) {
@@ -109,8 +114,10 @@ class Playground extends Command
                 }
             }
 
-            echo 'System "' . $result['hostname'] . '": OS found is ' . $result['os_name'] . ", updates avail.: " . $result['updates_available'] . ", uptime: " . $result['uptime'] . "\n";
-            dd($result);
+            // echo 'System "' . $result['hostname'] . '": OS found is ' . $result['os_name'] . ", updates avail.: " . $result['updates_available'] . ", uptime: " . $result['uptime'] . "\n";
+            $results[] = $result;
         }
+
+        dd($results);
     }
 }
