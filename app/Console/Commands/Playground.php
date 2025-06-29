@@ -39,7 +39,7 @@ class Playground extends Command
                 'user' => 'root',
                 'hostname' => 'sorriso.cloud',
                 'auth_method' => 'ssh_private_key',
-                'ssh_private_key_path' => ''
+                'ssh_private_key_path' => '/srv/services/keepup/storage/app/private/ssh_private_keys/id_sorriso'
             ]
         ];
 
