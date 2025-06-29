@@ -30,26 +30,42 @@ class Playground extends Command
     {
         $systems = [
             [
-                'user' => 'root',
+                'user' => 'mrcz',
                 'hostname' => 'keepup',
+                'auth_method' => 'password',
                 'password' => '123'
-            ]
+            ],
+            // [
+            //     'user' => 'root',
+            //     'hostname' => 'sorriso.cloud',
+            //     'auth_method' => 'ssh_private_key',
+            //     'ssh_private_key_path' => ''
+            // ]
         ];
 
         $results = array();
 
         foreach($systems as $system) {
             $process = Ssh::create($system['user'], $system['hostname'])
-                ->usePassword($system['password'])
-                ->disableStrictHostKeyChecking()
-                ->execute('cat /etc/*-release | grep "^NAME="');
+                ->disableStrictHostKeyChecking();
 
-            if(!$process->isSuccessful()) {
+            if($system['auth_method'] == 'password') {
+                $process = $process->usePassword($system['password']);
+            } elseif($system['auth_method'] == 'ssh_private_key') {
+                $process = $process->usePrivateKey($system['ssh_private_key_path']);
+            } else {
+                echo 'System ' . $system['hostname'] . " has no auth method supported, skipping...\n";
+                continue;
+            }
+
+            $request = $process->execute('cat /etc/*-release | grep "^NAME="');
+
+            if(!$request->isSuccessful()) {
                 echo 'System ' . $system['hostname'] . " encountered an error, skipping...\n";
                 continue;
             }
 
-            $output = $process->getOutput();
+            $output = $request->getOutput();
 
             // Start gathering results about the host
             $result = array(
@@ -70,35 +86,26 @@ class Playground extends Command
 
             // Find out uptime and ip addresses
             if(collect(['Debian', 'Arch Linux'])->contains($result['os_name'])) {
-                $process = Ssh::create($system['user'], $system['hostname'])
-                    ->usePassword($system['password'])
-                    ->disableStrictHostKeyChecking()
-                    ->execute('uptime --pretty');
+                $request = $process->execute('uptime --pretty');
 
-                if($process->isSuccessful()) {
-                    $result['uptime'] = Str::replace("\n", '', $process->getOutput());
+                if($request->isSuccessful()) {
+                    $result['uptime'] = Str::replace("\n", '', $request->getOutput());
                 }
 
-                $process = Ssh::create($system['user'], $system['hostname'])
-                    ->usePassword($system['password'])
-                    ->disableStrictHostKeyChecking()
-                    ->execute("ip addr | grep \"inet \" | grep -v 'inet 127.0.0.1' | awk '{print $2}'");
+                $request = $process->execute("ip addr | grep \"inet \" | grep -v 'inet 127.0.0.1' | awk '{print $2}'");
 
-                if($process->isSuccessful()) {
-                    $result['ip_addresses'] = Str::of($process->getOutput())->explode("\n")->slice(0, -1)->toArray();
+                if($request->isSuccessful()) {
+                    $result['ip_addresses'] = Str::of($request->getOutput())->explode("\n")->slice(0, -1)->toArray();
                 }
             }
 
             // Find out how many updates do you have
             // Find out uptime
             if(collect(['Debian'])->contains($result['os_name'])) {
-                $process = Ssh::create($system['user'], $system['hostname'])
-                    ->usePassword($system['password'])
-                    ->disableStrictHostKeyChecking()
-                    ->execute('apt update > /dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
+                $request = $process->execute('apt update > /dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
 
-                if($process->isSuccessful()) {
-                    $result['updates_available'] = Str::replace("\n", '', $process->getOutput());
+                if($request->isSuccessful()) {
+                    $result['updates_available'] = Str::replace("\n", '', $request->getOutput());
                 }
             }
 
