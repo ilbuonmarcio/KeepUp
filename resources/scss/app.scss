@@ -4,6 +4,7 @@ $navHeight: 120px;
 $creditsHeight: 40px;
 $purpleBrandColor: rgb(89, 36, 229);
 $white: rgb(242, 242, 242);
+$black: rgb(55, 55, 55);
 
 html, body {
     * {
@@ -50,7 +51,7 @@ p {
     padding-bottom: 10px;
 }
 
-button {
+button, a.button {
     padding-left: 12px;
     padding-right: 12px;
     padding-top: 8px;
@@ -60,6 +61,63 @@ button {
 
     margin-left: 12px;
     margin-right: 12px;
+
+    &.confirm {
+        background-color: $purpleBrandColor;
+        color: $white;
+    }
+    &.abort {
+        background-color: darken($white, 10%);
+        color: $black;
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    user-select: none;
+}
+
+input, textarea, select {
+    border-radius: 10px !important;
+    padding: 12px !important;
+    border: 0.5px solid rgb(0, 0, 0, 0.2) !important;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+.input-row {
+    display: grid;
+
+    &.columns-1 { grid-template-columns: 1fr; }
+    &.columns-2 { grid-template-columns: 1fr 1fr; }
+    &.columns-3 { grid-template-columns: 1fr 1fr 1fr; }
+    &.columns-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    &.columns-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+    &.columns-6 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; }
+
+    &.confirm-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        padding-top: 32px;
+        padding-bottom: 40px;
+    }
+
+    row-gap: 24px;
+    column-gap: 24px;
+
+    .input-cell {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        flex-direction: column;
+
+        label, input, select, textarea {
+            width: 100%;
+        }
+    }
 }
 
 
