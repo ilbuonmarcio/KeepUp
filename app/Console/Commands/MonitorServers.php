@@ -6,24 +6,23 @@ use App\Models\Monitor;
 use Illuminate\Console\Command;
 use Spatie\Ssh\Ssh;
 use Illuminate\Support\Str;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
-class Playground extends Command
+class MonitorServers extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:playground';
+    protected $signature = 'app:monitor';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Monitor servers';
 
     /**
      * Execute the console command.
