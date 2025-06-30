@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Monitor;
 use Illuminate\Console\Command;
 use Spatie\Ssh\Ssh;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 
 class Playground extends Command
 {
@@ -28,37 +30,24 @@ class Playground extends Command
      */
     public function handle()
     {
-        $systems = [
-            [
-                'user' => 'mrcz',
-                'hostname' => 'keepup',
-                'auth_method' => 'password',
-                'password' => '123'
-            ],
-            [
-                'user' => 'root',
-                'hostname' => 'sorriso.cloud',
-                'auth_method' => 'ssh_private_key',
-                'ssh_private_key_path' => '/srv/services/keepup/storage/app/private/ssh_private_keys/id_sorriso'
-            ]
-        ];
+        $systems = Monitor::get();
 
         $results = array();
 
         foreach($systems as $system) {
             // Start gathering results about the host
             $result = array(
-                'ran_as_user' => $system['user'],
+                'ran_as_user' => $system['username'],
                 'auth_method' => $system['auth_method'],
                 'connected_successfully' => false,
-                'hostname' => $system['hostname'],
-                'os_name' => null,
+                'hostname_ip' => $system['hostname_ip'],
+                'operating_system' => null,
                 'updates_available' => null,
                 'uptime' => null,
                 'ip_addresses' => null
             );
 
-            $process = Ssh::create($system['user'], $system['hostname'])
+            $process = Ssh::create($system['username'], $system['hostname_ip'])
                 ->disableStrictHostKeyChecking();
 
             if($system['auth_method'] == 'password') {
@@ -66,14 +55,14 @@ class Playground extends Command
             } elseif($system['auth_method'] == 'ssh_private_key') {
                 $process = $process->usePrivateKey($system['ssh_private_key_path']);
             } else {
-                echo 'System ' . $system['hostname'] . " has no auth method supported, skipping...\n";
+                echo 'System ' . $system['hostname_ip'] . " has no auth method supported, skipping...\n";
                 continue;
             }
 
             $request = $process->execute('cat /etc/*-release | grep "^NAME="');
 
             if(!$request->isSuccessful()) {
-                echo 'System ' . $system['hostname'] . " encountered an error, skipping...\n";
+                echo 'System ' . $system['hostname_ip'] . " encountered an error, skipping...\n";
                 $results[] = $result;
 
                 continue; // Skip to next
@@ -84,13 +73,13 @@ class Playground extends Command
 
             // Find out os name
             if (Str::contains($output, 'Debian')) {
-                $result['os_name'] = 'Debian';
+                $result['operating_system'] = 'Debian';
             } elseif(Str::contains($output, 'Arch Linux')) {
-                $result['os_name'] = 'Arch Linux';
+                $result['operating_system'] = 'Arch Linux';
             }
 
             // Find out uptime and ip addresses
-            if(collect(['Debian', 'Arch Linux'])->contains($result['os_name'])) {
+            if(collect(['Debian', 'Arch Linux'])->contains($result['operating_system'])) {
                 $request = $process->execute('uptime --pretty');
 
                 if($request->isSuccessful()) {
@@ -106,7 +95,7 @@ class Playground extends Command
 
             // Find out how many updates do you have
             // Find out uptime
-            if(collect(['Debian'])->contains($result['os_name'])) {
+            if(collect(['Debian'])->contains($result['operating_system'])) {
                 $request = $process->execute('apt update > /dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
 
                 if($request->isSuccessful()) {
@@ -114,10 +103,25 @@ class Playground extends Command
                 }
             }
 
-            // echo 'System "' . $result['hostname'] . '": OS found is ' . $result['os_name'] . ", updates avail.: " . $result['updates_available'] . ", uptime: " . $result['uptime'] . "\n";
-            $results[] = $result;
+            if(!$result['connected_successfully']) {
+                // Saving to database
+                $system->latest_check_positive = 0;
+                $system->operating_system = null;
+                $system->updates_available = null;
+                $system->uptime = null;
+                $system->ip_addresses = null;
+                $system->latest_successful_check = Carbon::now();
+                $system->save();
+            } else {
+                // Saving to database
+                $system->latest_check_positive = 1;
+                $system->operating_system = $result['operating_system'];
+                $system->updates_available = $result['updates_available'];
+                $system->uptime = $result['uptime'];
+                $system->ip_addresses = json_encode($result['ip_addresses']);
+                $system->latest_successful_check = Carbon::now();
+                $system->save();
+            }
         }
-
-        dd($results);
     }
 }

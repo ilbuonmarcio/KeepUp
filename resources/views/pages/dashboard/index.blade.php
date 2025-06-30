@@ -15,6 +15,7 @@
             <td>Uptime</td>
             <td>Updates Available</td>
             <td>IP Addresses</td>
+            <td>Status</td>
         </thead>
         <tbody>
             @foreach($monitors as $monitor)
@@ -26,7 +27,8 @@
                 <td>{{ $monitor->operating_system }}</td>
                 <td>{{ $monitor->uptime }}</td>
                 <td>{{ $monitor->updates_available }}</td>
-                <td>{{ $monitor->ip_addresses }}</td>
+                <td>{{ $monitor->ipAddresses() }}</td>
+                <td>{!! $monitor->status() !!}</td>
             </tr>
             @endforeach
         </tbody>
