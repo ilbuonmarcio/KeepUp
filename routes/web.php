@@ -10,6 +10,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('/monitors')->group(function () {
         Route::get('new', [MonitorController::class, 'new'])->name('monitors.new');
+        Route::post('new', [MonitorController::class, 'create'])->name('monitors.create');
     });
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

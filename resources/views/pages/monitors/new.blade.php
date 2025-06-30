@@ -79,7 +79,89 @@
     });
 
     $('button[data-action="create-new-monitor"]').on('click', function () {
-        // TODO: implement!
+        // Removing input field missing visuals before going on
+        $('#monitor-name').removeClass('input-field-missing-insertion');
+        $('#monitor-hostname-ip').removeClass('input-field-missing-insertion');
+        $('#monitor-username').removeClass('input-field-missing-insertion');
+        $('#monitor-auth-method').removeClass('input-field-missing-insertion');
+        $('#monitor-password').removeClass('input-field-missing-insertion');
+        $('#monitor-ssh-private-key').removeClass('input-field-missing-insertion');
+
+        var payload = {
+            name: $('#monitor-name').val().trim(),
+            hostname_ip: $('#monitor-hostname-ip').val().trim(),
+            username: $('#monitor-username').val().trim(),
+            auth_method: $('#monitor-auth-method').val().trim(),
+            password: $('#monitor-password').val().trim(),
+            ssh_private_key: $('#monitor-ssh-private-key').val().trim()
+        };
+
+        // Validation checkings of current inserted data
+        var hasEmptyMissing = false;
+
+        if(payload.name.length == 0) {
+            $('#monitor-name').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+
+        if(payload.hostname_ip.length == 0) {
+            $('#monitor-hostname-ip').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+
+        if(payload.username.length == 0) {
+            $('#monitor-username').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+        
+        if(payload.auth_method.length == 0) {
+            $('#monitor-auth-method').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+
+        if(payload.auth_method == 'password' && payload.password.length == 0) {
+            $('#monitor-password').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+
+        if(payload.auth_method == 'ssh_private_key' && payload.ssh_private_key.length == 0) {
+            $('#monitor-ssh-private-key').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+
+        if(hasEmptyMissing) {
+            toastr.error("Be sure to insert every field before confirming!", "Missing Fields")
+            return;
+        }
+
+        // All good, save to the system!
+        var _btnHTML = $('button[data-action="create-new-monitor"]').html();
+        $.ajax({
+            method: 'post',
+            url: '/monitors/new',
+            dataType: 'json',
+            data: payload,
+            beforeSend: function () {
+                $('button[data-action="create-new-monitor"]').html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+            },
+            success: function (data) {
+                if(!data.status) {
+                    toastr.error(`Error while saving new monitor (${data.errorMessage})`, "New Monitor Save");
+                }
+
+                toastr.success('New monitor saved successfully!', 'New Monitor Save');
+                setTimeout(function () {
+                    window.location.href = '/'; // Return to the dashboard to see all monitors
+                }, 2000);
+            },
+            error: function (error) {
+                console.error(error);
+                toastr.error("Error while saving new monitor", "New Monitor Save");
+            },
+            complete: function () {
+                $('button[data-action="create-new-monitor"]').html(_btnHTML);
+            }
+        });
     });
 </script>
 @endsection
