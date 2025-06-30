@@ -12,6 +12,7 @@ html, body {
         margin: 0;
         box-sizing: border-box;
         text-rendering: optimizeLegibility;
+        color: $black;
     }
 
     font-family: "Poppins", sans-serif;
@@ -88,6 +89,19 @@ input, textarea, select {
     &.input-field-missing-insertion {
         border: 2px solid rgb(255, 0, 0, 0.5) !important;
         background-color: rgb(255, 0, 0, 0.2);
+    }
+}
+
+table {
+    width: 100%;
+
+    td {
+        padding: 12px;
+
+        border-top: 1px solid rgb(242, 242, 242);
+        border-left: 1px solid rgb(242, 242, 242);
+        border-bottom: 1px solid rgb(204, 204, 204);
+        border-right: 1px solid rgb(223, 223, 223);
     }
 }
 

@@ -4,11 +4,36 @@
 <div class="card">
     <h5>Dashboard</h5>
 
-    @forelse($monitors as $monitor)
-        
-    @empty
+    @if(count($monitors))
+    <table>
+        <thead>
+            <td>Name</td>
+            <td>Hostname/IP</td>
+            <td>Username</td>
+            <td>Auth Method</td>
+            <td>Operating System</td>
+            <td>Uptime</td>
+            <td>Updates Available</td>
+            <td>IP Addresses</td>
+        </thead>
+        <tbody>
+            @foreach($monitors as $monitor)
+            <tr>
+                <td>{{ $monitor->name }}</td>
+                <td>{{ $monitor->hostname_ip }}</td>
+                <td>{{ $monitor->username }}</td>
+                <td>{{ $monitor->authMethod() }}</td>
+                <td>{{ $monitor->operating_system }}</td>
+                <td>{{ $monitor->uptime }}</td>
+                <td>{{ $monitor->updates_available }}</td>
+                <td>{{ $monitor->ip_addresses }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @else
         <p>There are currently no active monitors. Add one by <span class="brand-color">clicking on the top right button</span>.</p>
-    @endforelse
+    @endif
 </div>
 @endsection
 
