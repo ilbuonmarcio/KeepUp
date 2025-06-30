@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+$navHeight: 120px;
+$creditsHeight: 40px;
+$purpleBrandColor: rgb(89, 36, 229);
+$white: rgb(242, 242, 242);
+
+html, body {
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        text-rendering: optimizeLegibility;
+    }
+
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+
+    height: 100vh;
+    width: 100vw;
+}
+
+a {
+    color: $purpleBrandColor;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.brand-color {
+    color: $purpleBrandColor;
+}
+
+h1 { font-size: 30px; }
+h2 { font-size: 28px; }
+h3 { font-size: 26px; }
+h4 { font-size: 24px; }
+h5 { font-size: 22px; }
+h6 { font-size: 20px; }
+
+h1, h2, h3, h4, h5, h6 {
+    padding-top: 4px;
+    padding-bottom: 8px;
+
+    font-weight: 600;
+}
+
+p {
+    padding-top: 4px;
+    padding-bottom: 10px;
+}
+
+
+#app {
+    display: grid;
+    grid-template-rows: $navHeight calc(100vh - $navHeight - $creditsHeight) $creditsHeight;
+
+    #app-navigation {
+        height: 100%;
+        background-color: rgb(234, 234, 234);
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        a#logo-link {
+            padding: 0;
+            margin: 0;
+        }
+
+        a {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        * {
+            max-height: $navHeight;
+        }
+
+        #nav-left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        #nav-right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+
+            background-color: $purpleBrandColor;
+
+            height: 100%;
+
+            a {
+                color: $white;
+
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+    }
+
+    #app-content {
+        background-color: rgb(242, 242, 242);
+        height: 100%;
+
+        padding: 32px;
+
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #credits {
+        height: $creditsHeight;
+        
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+.card {
+    box-shadow: 0px 4px 32px rgba(0, 0, 0, 0.05);
+
+    padding: 32px;
+
+    border-radius: 24px;
+}
