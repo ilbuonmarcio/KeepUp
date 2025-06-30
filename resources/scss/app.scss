@@ -79,6 +79,10 @@ button, a.button {
         background-color: darken($white, 10%);
         color: $black;
     }
+    &.delete {
+        background-color: rgb(203, 54, 54);
+        color: $white;
+    }
 
     &:hover {
         cursor: pointer;

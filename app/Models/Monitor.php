@@ -35,4 +35,8 @@ class Monitor extends Model
             return '<span class="monitor-status-bad">Bad</span><br><small>Last good check:<br>' . Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i') . '</small>';
         }
     }
+
+    public function sshPrivateKeyFullPath() {
+        return storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key);
+    }
 }

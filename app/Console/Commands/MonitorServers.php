@@ -52,7 +52,7 @@ class MonitorServers extends Command
             if($system['auth_method'] == 'password') {
                 $process = $process->usePassword($system['password']);
             } elseif($system['auth_method'] == 'ssh_private_key') {
-                $process = $process->usePrivateKey($system['ssh_private_key_path']);
+                $process = $process->usePrivateKey($system->sshPrivateKeyFullPath());
             } else {
                 echo 'System ' . $system['hostname_ip'] . " has no auth method supported, skipping...\n";
                 continue;

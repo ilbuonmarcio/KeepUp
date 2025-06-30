@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Monitor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class MonitorController extends Controller
 {
@@ -37,9 +38,37 @@ class MonitorController extends Controller
         $monitor->hostname_ip = $validated['hostname_ip'];
         $monitor->username = $validated['username'];
         $monitor->auth_method = $validated['auth_method'];
-        $monitor->password = $validated['password'];
-        $monitor->ssh_private_key = $validated['ssh_private_key'];
+        if($validated['auth_method'] == 'password') {
+            $monitor->password = $validated['password'];
+        } else {
+            // Save to local storage the content as a file, and save the reference to it to database
+            $key_filename = Str::random(40) . '.key';
+
+            $directory = storage_path('app/private/ssh_private_keys');
+            if (!is_dir($directory)) {
+                mkdir($directory, 0770, true);  // Creates the directory with correct permissions, if it's not already available
+            }
+
+            // Save to disk and change permissions for proper usage
+            Storage::disk('private_keys')->put($key_filename, $validated['ssh_private_key']);
+            chmod(storage_path('app/private/ssh_private_keys/' . $key_filename), 0660);
+
+            $monitor->ssh_private_key = $key_filename;
+        }
         $monitor->save();
+
+        return array('status' => true);
+    }
+
+    public function delete(Request $request) {
+        $validated = $request->validate([
+            'id_monitor' => 'integer|required'
+        ]);
+
+        // TODO: remove ssh key file before deleting!
+
+        $monitor = Monitor::findOrFail($validated['id_monitor']);
+        $monitor->delete();
 
         return array('status' => true);
     }

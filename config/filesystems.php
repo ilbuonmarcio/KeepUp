@@ -60,6 +60,11 @@ return [
             'report' => false,
         ],
 
+        'private_keys' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/ssh_private_keys'),
+        ],
+
     ],
 
     /*
