@@ -50,6 +50,18 @@ p {
     padding-bottom: 10px;
 }
 
+button {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    
+    border-radius: 10px;
+
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
 
 #app {
     display: grid;
@@ -97,6 +109,11 @@ p {
 
                 padding-left: 12px;
                 padding-right: 12px;
+            }
+
+            button {
+                background-color: $white;
+                color: $purpleBrandColor;
             }
         }
     }
