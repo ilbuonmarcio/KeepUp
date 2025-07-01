@@ -28,7 +28,7 @@
                 <td>{{ $monitor->operating_system }}</td>
                 <td>{{ $monitor->uptime }}</td>
                 <td>{{ $monitor->updates_available }}</td>
-                <td>{{ $monitor->ipAddresses() }}</td>
+                <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{!! $monitor->status() !!}</td>
                 <td><button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button></td>
             </tr>

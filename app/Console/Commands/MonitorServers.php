@@ -76,10 +76,12 @@ class MonitorServers extends Command
                 $result['operating_system'] = 'Debian';
             } elseif(Str::contains($output, 'Arch Linux')) {
                 $result['operating_system'] = 'Arch Linux';
+            } elseif(Str::contains($output, 'Ubuntu')) {
+                $result['operating_system'] = 'Ubuntu';
             }
 
             // Find out uptime and ip addresses
-            if(collect(['Debian', 'Arch Linux'])->contains($result['operating_system'])) {
+            if(collect(['Debian', 'Arch Linux', 'Ubuntu'])->contains($result['operating_system'])) {
                 $request = $process->execute('uptime --pretty');
 
                 if($request->isSuccessful()) {
@@ -95,7 +97,7 @@ class MonitorServers extends Command
 
             // Find out how many updates do you have
             // Find out uptime
-            if(collect(['Debian'])->contains($result['operating_system'])) {
+            if(collect(['Debian', 'Ubuntu'])->contains($result['operating_system'])) {
                 $request = $process->execute('apt update > /dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
 
                 if($request->isSuccessful()) {

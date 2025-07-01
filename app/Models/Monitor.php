@@ -24,7 +24,7 @@ class Monitor extends Model
             return '-';
         } else {
             $ips = collect(json_decode($this->ip_addresses, JSON_OBJECT_AS_ARRAY));
-            return $ips->implode($ips);
+            return $ips->join('<br>');
         }
     }
 
