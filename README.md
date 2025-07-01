@@ -21,4 +21,5 @@ Maybe... a remote SSH shell directly from the browser? :)
 # License
 
 This software is licensed under MIT license. See `LICENSE` file for more information.
-This software is based on the Laravel Framework, all rights reserved to the license owners.
+
+This software is based on the [Laravel Framework](https://laravel.com), all rights reserved to the respective license owners.
