@@ -47,7 +47,8 @@ class MonitorServers extends Command
             );
 
             $process = Ssh::create($system['username'], $system['hostname_ip'])
-                ->disableStrictHostKeyChecking();
+                ->disableStrictHostKeyChecking()
+                ->setTimeout(100);
 
             if($system['auth_method'] == 'password') {
                 $process = $process->usePassword($system['password']);

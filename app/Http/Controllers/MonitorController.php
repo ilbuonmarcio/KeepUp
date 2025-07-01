@@ -20,7 +20,7 @@ class MonitorController extends Controller
             'username' => 'string|required',
             'auth_method' => 'string|required',
             'password' => 'string|nullable',
-            'ssh_private_key' => 'string|nullable'
+            'ssh_private_key' => 'required'
         ]);
 
         if(!in_array($validated['auth_method'], ['password', 'ssh_private_key'])) {
@@ -50,7 +50,8 @@ class MonitorController extends Controller
             }
 
             // Save to disk and change permissions for proper usage
-            Storage::disk('private_keys')->put($key_filename, $validated['ssh_private_key']);
+            $file = $request->file('ssh_private_key');
+            Storage::disk('private_keys')->putFileAs('', $file, $key_filename);
             chmod(storage_path('app/private/ssh_private_keys/' . $key_filename), 0660);
 
             $monitor->ssh_private_key = $key_filename;

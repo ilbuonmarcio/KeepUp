@@ -41,7 +41,7 @@
     <div class="input-row columns-1">
         <div class="input-cell">
             <label for="monitor-ssh-private-key">SSH Private Key</label>
-            <textarea id="monitor-ssh-private-key" rows="12" name="monitor-ssh-private-key" value="" autocomplete="off" placeholder="Copy-paste your remote machine's SSH private key for remote login for this username"></textarea>
+            <input type="file" id="monitor-ssh-private-key" name="monitor-ssh-private-key" value="" autocomplete="off" placeholder="Copy-paste your remote machine's SSH private key for remote login for this username"/>
         </div>
     </div>
 
@@ -93,7 +93,7 @@
             username: $('#monitor-username').val().trim(),
             auth_method: $('#monitor-auth-method').val().trim(),
             password: $('#monitor-password').val().trim(),
-            ssh_private_key: $('#monitor-ssh-private-key').val().trim()
+            ssh_private_key: $('#monitor-ssh-private-key')[0].files[0]
         };
 
         // Validation checkings of current inserted data
@@ -124,7 +124,7 @@
             hasEmptyMissing = true;
         }
 
-        if(payload.auth_method == 'ssh_private_key' && payload.ssh_private_key.length == 0) {
+        if(payload.auth_method == 'ssh_private_key' && payload.ssh_private_key === undefined) {
             $('#monitor-ssh-private-key').addClass('input-field-missing-insertion');
             hasEmptyMissing = true;
         }
@@ -134,13 +134,20 @@
             return;
         }
 
+        // Create temporary form data so that I can upload the file if needed
+        var formData = new FormData();
+        for(var key of Object.keys(payload)) {
+            formData.append(key, payload[key]);
+        }
+
         // All good, save to the system!
         var _btnHTML = $('button[data-action="create-new-monitor"]').html();
         $.ajax({
             method: 'post',
             url: '/monitors/new',
-            dataType: 'json',
-            data: payload,
+            data: formData,
+            processData: false,
+            contentType: false,
             beforeSend: function () {
                 $('button[data-action="create-new-monitor"]').html('<i class="fas fa-spinner fa-spin"></i> Saving...');
             },
