@@ -47,7 +47,9 @@ class MonitorServers extends Command
                     'operating_system' => null,
                     'updates_available' => null,
                     'uptime' => null,
-                    'ip_addresses' => null
+                    'ip_addresses' => null,
+                    'cpu_load' => null,
+                    'disks_status' => null
                 );
 
                 $process = Ssh::create($system['username'], $system['hostname_ip'])
@@ -84,6 +86,8 @@ class MonitorServers extends Command
                     }
 
                     // Find out uptime and ip addresses
+                    // Find out cpu load average
+                    // Find out memory consumption
                     if(collect(['Debian', 'Arch Linux', 'Ubuntu'])->contains($result['operating_system'])) {
                         $request = $process->execute('awk \'{printf "%.2f", $1/86400}\' /proc/uptime');
 
@@ -96,12 +100,30 @@ class MonitorServers extends Command
                         if($request->isSuccessful()) {
                             $result['ip_addresses'] = Str::of($request->getOutput())->explode("\n")->slice(0, -1)->toArray();
                         }
+
+                        $request = $process->execute('uptime | grep -ohe \'load average[s:][: ].*\' | awk \'{ print $3, $4, $5 }\'');
+
+                        if($request->isSuccessful()) {
+                            $result['cpu_load'] = Str::replace("\n", '', $request->getOutput());
+                        }
+
+                        $request = $process->execute('df -h | head -n 1; df -h | grep \'^/dev\'');
+
+                        if($request->isSuccessful()) {
+                            $result['disks_status'] = $request->getOutput();
+                        }
                     }
 
                     // Find out how many updates do you have
-                    // Find out uptime
                     if(collect(['Debian', 'Ubuntu'])->contains($result['operating_system'])) {
                         $request = $process->execute('apt update > /dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
+
+                        if($request->isSuccessful()) {
+                            $result['updates_available'] = Str::replace("\n", '', $request->getOutput());
+                        }
+                    }
+                    if(collect(['Arch Linux'])->contains($result['operating_system'])) {
+                        $request = $process->execute('pacman -Sy &> /dev/null;pacman -Qu | wc -l');
 
                         if($request->isSuccessful()) {
                             $result['updates_available'] = Str::replace("\n", '', $request->getOutput());
@@ -116,6 +138,8 @@ class MonitorServers extends Command
                     $system->updates_available = null;
                     $system->uptime = null;
                     $system->ip_addresses = null;
+                    $system->cpu_load = null;
+                    $system->disks_status = null;
                 } else {
                     // Saving to database
                     $system->latest_check_positive = 1;
@@ -123,6 +147,8 @@ class MonitorServers extends Command
                     $system->updates_available = $result['updates_available'];
                     $system->uptime = $result['uptime'];
                     $system->ip_addresses = json_encode($result['ip_addresses']);
+                    $system->cpu_load = $result['cpu_load'];
+                    $system->disks_status = $result['disks_status'];
                 }
 
                 $system->latest_successful_check = Carbon::now();
