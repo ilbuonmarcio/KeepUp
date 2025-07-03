@@ -5,7 +5,16 @@
     <h5>Dashboard</h5>
 
     @if(count($monitors))
-    <table>
+    <div class="input-row columns-2">
+        <div class="card input-cell">
+            <h1><span class="monitor-status-good">Good ({{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 1; })->count() }})</span></h1>
+        </div>
+        <div class="card input-cell">
+            <h1><span class="monitor-status-bad">Bad ({{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 0; })->count() }})</span></h1>
+        </div>
+    </div>
+
+    <table style="margin-top: 32px;">
         <thead>
             <td>Name</td>
             <td>Hostname/IP</td>

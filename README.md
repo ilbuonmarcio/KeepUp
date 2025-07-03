@@ -19,7 +19,7 @@ For now, everything needed from my side is currently implemented, but you're ver
 Ideas worth mentioning:
 
 - [ ] History of changes between a monitor check and the next one, via a separate versioned data table (uptime, number of updates)
-- [ ] Summary status of Good, Bad, Unknown on the top side of Dashboard section
+- [x] Summary status of Good, Bad on the top side of Dashboard section
 - [x] Add single Monitor alert for number of update threshold, uptime threshold
 - [ ] Add global cumulative Monitors alert for number of update threshold, uptime threshold
 - [ ] Send reports via e-mail on a weekly basis
