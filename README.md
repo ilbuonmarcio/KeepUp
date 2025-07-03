@@ -16,7 +16,15 @@ Your personal assistant for keeping your Linux systems up-to-date!
 
 For now, everything needed from my side is currently implemented, but you're very welcome to contribute to the project by opening a PR!
 
-Maybe... a remote SSH shell directly from the browser? :)
+Ideas worth mentioning:
+
+- [ ] History of changes between a monitor check and the next one, via a separate versioned data table (uptime, number of updates)
+- [ ] Summary status of Good, Bad, Unknown on the top side of Dashboard section
+- [ ] Add single Monitor alert for number of update threshold, uptime threshold
+- [ ] Add global cumulative Monitors alert for number of update threshold, uptime threshold
+- [ ] Send reports via e-mail on a weekly basis
+- [ ] Add single-click remote shell to the remote system to do manual checkup, remote updates and reboot/shutdown tasks
+- [ ] Get cumulative volatile memory status, disk(s) space left and system load
 
 # License
 
