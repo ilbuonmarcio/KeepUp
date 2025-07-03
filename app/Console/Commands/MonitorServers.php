@@ -85,7 +85,7 @@ class MonitorServers extends Command
 
                     // Find out uptime and ip addresses
                     if(collect(['Debian', 'Arch Linux', 'Ubuntu'])->contains($result['operating_system'])) {
-                        $request = $process->execute('awk \'{printf "%.2f days\n", $1/86400}\' /proc/uptime');
+                        $request = $process->execute('awk \'{printf "%.2f", $1/86400}\' /proc/uptime');
 
                         if($request->isSuccessful()) {
                             $result['uptime'] = Str::replace("\n", '', $request->getOutput());

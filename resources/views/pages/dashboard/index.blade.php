@@ -26,7 +26,7 @@
                 <td>{{ $monitor->username }}</td>
                 <td>{{ $monitor->authMethod() }}</td>
                 <td>{{ $monitor->operating_system }}</td>
-                <td>{{ $monitor->uptime }}</td>
+                <td>{{ $monitor->uptime }} days</td>
                 <td>{{ $monitor->updates_available }}</td>
                 <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{!! $monitor->status() !!}</td>
