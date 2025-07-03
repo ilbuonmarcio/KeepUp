@@ -24,7 +24,7 @@ Ideas worth mentioning:
 - [ ] Add global cumulative Monitors alert for number of update threshold, uptime threshold
 - [ ] Send reports via e-mail on a weekly basis
 - [ ] Add single-click remote shell to the remote system to do manual checkup, remote updates and reboot/shutdown tasks
-- [ ] Get cumulative volatile memory status, disk(s) space left and system load
+- [x] Get cumulative volatile memory status, disk(s) space left and system load
 
 # License
 

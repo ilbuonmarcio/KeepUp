@@ -24,13 +24,15 @@
             <td>Uptime</td>
             <td>Updates Available</td>
             <td>IP Addresses</td>
+            <td>CPU Load</td>
+            <td>Disks Status</td>
             <td>Status</td>
             <td></td>
         </thead>
         <tbody>
             @foreach($monitors as $monitor)
             <tr>
-                <td>{{ $monitor->name }}</td>
+                <td><span class="monitor-status-{{ $monitor->latest_check_positive == 1 ? 'good' : 'bad' }}">{{ $monitor->name }}</td>
                 <td>{{ $monitor->hostname_ip }}</td>
                 <td>{{ $monitor->username }}</td>
                 <td>{{ $monitor->authMethod() }}</td>
@@ -38,6 +40,8 @@
                 <td {!! $monitor->thresholdUptimeTriggered() ? 'class="table-cell-alert"' : '' !!}>{{ $monitor->uptime }} days</td>
                 <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="table-cell-alert"' : '' !!}>{{ $monitor->updates_available }}</td>
                 <td>{!! $monitor->ipAddresses() !!}</td>
+                <td>{{ $monitor->cpu_load }}</td>
+                <td><pre>{{ $monitor->disks_status }}</pre></td>
                 <td>{!! $monitor->status() !!}</td>
                 <td><button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button></td>
             </tr>
