@@ -129,6 +129,10 @@ class MonitorServers extends Command
                 $system->check_time = $init->diffInMilliseconds(Carbon::now());;
                 $system->save();
 
+                // Create version of the last saved monitor status, if connected successfully
+                if($result['connected_successfully']) {
+                    $system->version();
+                }
                 
                 Log::channel('monitors_stacked')->info("Monitor for system [$system->name] checked in $system->check_time ms");
             } catch (Exception $e) {

@@ -47,4 +47,13 @@ class Monitor extends Model
     public function thresholdUpdatesAvailableTriggered() {
         return $this->updates_available >= $this->threshold_updates_available;
     }
+
+    public function version() {
+        $version = new MonitorVersion();
+        $version->monitor_id = $this->id;
+        $version->uptime = $this->uptime;
+        $version->updates_available = $this->updates_available;
+        $version->check_time = $this->check_time;
+        $version->save();
+    }
 }
