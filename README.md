@@ -12,6 +12,11 @@ Your personal assistant for keeping your Linux systems up-to-date!
     - Updates available
     - IP addresses of the remote machine
 
+## Screenshots
+
+![Dashboard view](/screenshots/dashboard.png)
+![Monitor creation view](/screenshots/monitor_creation.png)
+
 ## Roadmap
 
 For now, everything needed from my side is currently implemented, but you're very welcome to contribute to the project by opening a PR!
