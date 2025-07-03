@@ -114,6 +114,10 @@ table {
         border-left: 1px solid rgb(242, 242, 242);
         border-bottom: 1px solid rgb(204, 204, 204);
         border-right: 1px solid rgb(223, 223, 223);
+
+        &.table-cell-alert {
+            background-color: rgb(236, 218, 103) !important;
+        }
     }
 }
 

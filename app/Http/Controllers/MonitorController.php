@@ -20,7 +20,9 @@ class MonitorController extends Controller
             'username' => 'string|required',
             'auth_method' => 'string|required',
             'password' => 'string|nullable',
-            'ssh_private_key' => 'required'
+            'ssh_private_key' => 'required',
+            'threshold_uptime' => 'numeric|required',
+            'threshold_updates_available' => 'numeric|required'
         ]);
 
         if(!in_array($validated['auth_method'], ['password', 'ssh_private_key'])) {
@@ -38,6 +40,8 @@ class MonitorController extends Controller
         $monitor->hostname_ip = $validated['hostname_ip'];
         $monitor->username = $validated['username'];
         $monitor->auth_method = $validated['auth_method'];
+        $monitor->threshold_uptime = $validated['threshold_uptime'];
+        $monitor->threshold_updates_available = $validated['threshold_updates_available'];
         if($validated['auth_method'] == 'password') {
             $monitor->password = $validated['password'];
         } else {

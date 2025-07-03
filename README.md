@@ -20,7 +20,7 @@ Ideas worth mentioning:
 
 - [ ] History of changes between a monitor check and the next one, via a separate versioned data table (uptime, number of updates)
 - [ ] Summary status of Good, Bad, Unknown on the top side of Dashboard section
-- [ ] Add single Monitor alert for number of update threshold, uptime threshold
+- [x] Add single Monitor alert for number of update threshold, uptime threshold
 - [ ] Add global cumulative Monitors alert for number of update threshold, uptime threshold
 - [ ] Send reports via e-mail on a weekly basis
 - [ ] Add single-click remote shell to the remote system to do manual checkup, remote updates and reboot/shutdown tasks

@@ -45,6 +45,20 @@
         </div>
     </div>
 
+
+    <h5>Monitor-specific thresholds</h5>
+    <div class="input-row columns-2">
+        <div class="input-cell">
+            <label for="monitor-threshold-uptime">Uptime Threshold</label>
+            <input type="number" id="monitor-threshold-uptime" name="monitor-threshold-uptime" value="365" min="0" step="1" autocomplete="off" placeholder="Insert your machine monitor threshold for uptime"/>
+        </div>
+
+        <div class="input-cell">
+            <label for="monitor-threshold-updates-available">Updates Available Threshold</label>
+            <input type="number" id="monitor-threshold-updates-available" name="monitor-threshold-updates-available" value="1" min="1" step="1" autocomplete="off" placeholder="Insert your machine monitor threshold for updates available"/>
+        </div>
+    </div>
+
     <div class="input-row confirm-row">
         <button type="button" class="confirm" data-action="create-new-monitor">Confirm</button>
         <button type="button" class="abort" data-action="abort-new-monitor">Abort</button>
@@ -86,6 +100,8 @@
         $('#monitor-auth-method').removeClass('input-field-missing-insertion');
         $('#monitor-password').removeClass('input-field-missing-insertion');
         $('#monitor-ssh-private-key').removeClass('input-field-missing-insertion');
+        $('#monitor-threshold-uptime').removeClass('input-field-missing-insertion');
+        $('#monitor-threshold-updates-available').removeClass('input-field-missing-insertion');
 
         var payload = {
             name: $('#monitor-name').val().trim(),
@@ -93,7 +109,9 @@
             username: $('#monitor-username').val().trim(),
             auth_method: $('#monitor-auth-method').val().trim(),
             password: $('#monitor-password').val().trim(),
-            ssh_private_key: $('#monitor-ssh-private-key')[0].files[0]
+            ssh_private_key: $('#monitor-ssh-private-key')[0].files[0],
+            threshold_uptime: $('#monitor-threshold-uptime').val().trim(),
+            threshold_updates_available: $('#monitor-threshold-updates-available').val().trim()
         };
 
         // Validation checkings of current inserted data
@@ -126,6 +144,16 @@
 
         if(payload.auth_method == 'ssh_private_key' && payload.ssh_private_key === undefined) {
             $('#monitor-ssh-private-key').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+
+        if(payload.threshold_uptime.length == 0) {
+            $('#monitor-threshold-uptime').addClass('input-field-missing-insertion');
+            hasEmptyMissing = true;
+        }
+
+        if(payload.threshold_updates_available.length == 0) {
+            $('#monitor-threshold-updates-available').addClass('input-field-missing-insertion');
             hasEmptyMissing = true;
         }
 

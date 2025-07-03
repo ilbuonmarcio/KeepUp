@@ -39,4 +39,12 @@ class Monitor extends Model
     public function sshPrivateKeyFullPath() {
         return storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key);
     }
+
+    public function thresholdUptimeTriggered() {
+        return $this->uptime >= $this->threshold_uptime;
+    }
+
+    public function thresholdUpdatesAvailableTriggered() {
+        return $this->updates_available >= $this->threshold_updates_available;
+    }
 }

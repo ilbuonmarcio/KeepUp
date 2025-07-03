@@ -26,8 +26,8 @@
                 <td>{{ $monitor->username }}</td>
                 <td>{{ $monitor->authMethod() }}</td>
                 <td>{{ $monitor->operating_system }}</td>
-                <td>{{ $monitor->uptime }} days</td>
-                <td>{{ $monitor->updates_available }}</td>
+                <td {!! $monitor->thresholdUptimeTriggered() ? 'class="table-cell-alert"' : '' !!}>{{ $monitor->uptime }} days</td>
+                <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="table-cell-alert"' : '' !!}>{{ $monitor->updates_available }}</td>
                 <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{!! $monitor->status() !!}</td>
                 <td><button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button></td>
