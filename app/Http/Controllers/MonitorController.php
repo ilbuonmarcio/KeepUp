@@ -6,6 +6,7 @@ use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 
 class MonitorController extends Controller
 {
@@ -43,7 +44,7 @@ class MonitorController extends Controller
         $monitor->threshold_uptime = $validated['threshold_uptime'];
         $monitor->threshold_updates_available = $validated['threshold_updates_available'];
         if($validated['auth_method'] == 'password') {
-            $monitor->password = $validated['password'];
+            $monitor->password = Crypt::encryptString($validated['password']);
         } else {
             // Save to local storage the content as a file, and save the reference to it to database
             $key_filename = Str::random(40) . '.key';

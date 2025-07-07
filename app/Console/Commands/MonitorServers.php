@@ -9,6 +9,7 @@ use Spatie\Ssh\Ssh;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Crypt;
 
 class MonitorServers extends Command
 {
@@ -57,7 +58,7 @@ class MonitorServers extends Command
                     ->setTimeout(100);
 
                 if($system['auth_method'] == 'password') {
-                    $process = $process->usePassword($system['password']);
+                    $process = $process->usePassword(Crypt::decryptString($system['password']));
                 } elseif($system['auth_method'] == 'ssh_private_key') {
                     $process = $process->usePrivateKey($system->sshPrivateKeyFullPath());
                 } else {
@@ -162,7 +163,17 @@ class MonitorServers extends Command
                 
                 Log::channel('monitors_stacked')->info("Monitor for system [$system->name] checked in $system->check_time ms");
             } catch (Exception $e) {
-                Log::channel('monitors_stacked')->error("Error while checking monitor for system [$system->name]", $e);
+                Log::channel('monitors_stacked')->error("Error while checking monitor for system [$system->name]");
+
+                // Saving the failure
+                $system->latest_check_positive = 0;
+                $system->operating_system = null;
+                $system->updates_available = null;
+                $system->uptime = null;
+                $system->ip_addresses = null;
+                $system->cpu_load = null;
+                $system->disks_status = null;
+                $system->save();
             }
         }
     }
