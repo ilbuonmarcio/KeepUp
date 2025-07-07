@@ -2,15 +2,16 @@
 
 @section('page-content')
 <div class="card">
-    <h5>Dashboard</h5>
-
     @if(count($monitors))
-    <div class="input-row columns-2">
+    <div class="input-row columns-3">
         <div class="card input-cell">
-            <h1><span class="monitor-status-good">Good ({{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 1; })->count() }})</span></h1>
+            <h1><span class="monitor-status-good">Good: {{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 1; })->count() }}</span></h1>
         </div>
         <div class="card input-cell">
-            <h1><span class="monitor-status-bad">Bad ({{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 0; })->count() }})</span></h1>
+            <h1><span class="monitor-status-bad">Bad: {{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 0; })->count() }}</span></h1>
+        </div>
+         <div class="card input-cell">
+            <h1><span class="monitor-status-warning">Updates available: {{ $monitors->map(function ($elem) { return $elem->updates_available; })->sum() }}</span></h1>
         </div>
     </div>
 
