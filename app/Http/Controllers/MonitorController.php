@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RunMonitorRightAfterCreation;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -63,6 +64,8 @@ class MonitorController extends Controller
             $monitor->ssh_private_key = $key_filename;
         }
         $monitor->save();
+
+        dispatch(new RunMonitorRightAfterCreation());
 
         return array('status' => true);
     }
