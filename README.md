@@ -27,8 +27,8 @@ Ideas worth mentioning:
 - [x] Summary status of Good, Bad on the top side of Dashboard section
 - [x] Add single Monitor alert for number of update threshold, uptime threshold
 - [ ] Add global cumulative Monitors alert for number of update threshold, uptime threshold
-- [X] Add cumulative stats for updates available
-- [ ] Add password encryption
+- [x] Add cumulative stats for updates available
+- [x] Add password encryption
 - [ ] Add ssh private key encryption
 - [ ] Send reports via e-mail on a weekly basis
 ~~- [ ] Add single-click remote shell to the remote system to do manual checkup, remote updates and reboot/shutdown tasks~~
