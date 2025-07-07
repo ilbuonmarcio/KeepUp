@@ -29,7 +29,7 @@ Ideas worth mentioning:
 - [ ] Add global cumulative Monitors alert for number of update threshold, uptime threshold
 - [x] Add cumulative stats for updates available
 - [x] Add password encryption
-- [ ] Add ssh private key encryption
+- [x] Add ssh private key encryption
 - [ ] Send reports via e-mail on a weekly basis
 ~~- [ ] Add single-click remote shell to the remote system to do manual checkup, remote updates and reboot/shutdown tasks~~
 - [x] Get cumulative volatile memory status, disk(s) space left and system load

@@ -60,7 +60,9 @@ class MonitorServers extends Command
                 if($system['auth_method'] == 'password') {
                     $process = $process->usePassword(Crypt::decryptString($system['password']));
                 } elseif($system['auth_method'] == 'ssh_private_key') {
-                    $process = $process->usePrivateKey($system->sshPrivateKeyFullPath());
+                    // Decrypt ssh private key on the fly
+                    $system->sshKeyDecrypt();
+                    $process = $process->usePrivateKey($system->sshPrivateKeyFullPath() . '.decrypt')->disablePasswordAuthentication();
                 } else {
                     echo 'System ' . $system['hostname_ip'] . " has no auth method supported, skipping...\n";
                     continue;
@@ -163,6 +165,8 @@ class MonitorServers extends Command
                 
                 Log::channel('monitors_stacked')->info("Monitor for system [$system->name] checked in $system->check_time ms");
             } catch (Exception $e) {
+                dd($e);
+                
                 Log::channel('monitors_stacked')->error("Error while checking monitor for system [$system->name]");
 
                 // Saving the failure
@@ -175,6 +179,8 @@ class MonitorServers extends Command
                 $system->disks_status = null;
                 $system->save();
             }
+
+            $system->sshKeyDecryptFlush();
         }
     }
 }

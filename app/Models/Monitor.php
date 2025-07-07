@@ -5,6 +5,8 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 
 class Monitor extends Model
 {
@@ -55,5 +57,21 @@ class Monitor extends Model
         $version->updates_available = $this->updates_available;
         $version->check_time = $this->check_time;
         $version->save();
+    }
+
+    public function sshKeyDecrypt() {
+        $this->sshKeyDecryptFlush();
+
+        $encrypted = file_get_contents($this->sshPrivateKeyFullPath());
+        $decrypted = Crypt::decryptString($encrypted);
+
+        // Save temporarily
+        Storage::disk('private_keys')->put($this->ssh_private_key . '.decrypt', $decrypted);
+        chmod(storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key . '.decrypt'), 0600);
+        chown(storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key . '.decrypt'), 'www-data');
+    }
+
+    public function sshKeyDecryptFlush() {
+        Storage::disk('private_keys')->delete($this->ssh_private_key . '.decrypt');
     }
 }
