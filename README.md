@@ -31,6 +31,7 @@ Ideas worth mentioning:
 - [x] Add ssh private key encryption
 - [ ] Send reports via e-mail on a weekly basis
 - [x] Get cumulative volatile memory status, disk(s) space left and system load
+- [x] Add manual refresh button on dashboard + last refresh + auto refresh page on 5 minutes on dashboard
 
 # License
 

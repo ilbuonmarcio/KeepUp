@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
+use App\Models\MonitorLastRefresh;
 
 class MonitorServers extends Command
 {
@@ -182,5 +183,9 @@ class MonitorServers extends Command
 
             $system->sshKeyDecryptFlush();
         }
+
+        // Add refresh status update
+        $refresh = new MonitorLastRefresh();
+        $refresh->save();
     }
 }

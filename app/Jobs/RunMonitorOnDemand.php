@@ -6,7 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Artisan;
 
-class RunMonitorRightAfterCreation implements ShouldQueue
+class RunMonitorOnDemand implements ShouldQueue
 {
     use Queueable;
 

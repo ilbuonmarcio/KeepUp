@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\RunMonitorRightAfterCreation;
+use App\Jobs\RunMonitorOnDemand;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -65,7 +65,7 @@ class MonitorController extends Controller
         }
         $monitor->save();
 
-        dispatch(new RunMonitorRightAfterCreation());
+        dispatch(new RunMonitorOnDemand());
 
         return array('status' => true);
     }
@@ -81,5 +81,11 @@ class MonitorController extends Controller
         $monitor->delete();
 
         return array('status' => true);
+    }
+
+    public function runMonitorsOnDemand() {
+        dispatch(new RunMonitorOnDemand());
+
+        return redirect('/');
     }
 }

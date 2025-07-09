@@ -15,6 +15,8 @@
         </div>
     </div>
 
+    <div style="margin-top: 32px; width: 100%; text-align: right;">Last monitor scan: @if(!is_null($last_refresh)) {{ $last_refresh->created_at->format('Y-d-m H:i') }} @else - @endif</div>
+
     <table style="margin-top: 32px;">
         <thead>
             <td>Name</td>
@@ -84,5 +86,12 @@
             }
         })
     })
+
+    $(document).ready(function () {
+        // Auto page reload after 5 minutes for static view content page on monitor dedicated to monitoring
+        setTimeout(function () {
+            window.location.reload();
+        }, 1000 * 60 * 5); // 5 minutes
+    });
 </script>
 @endsection

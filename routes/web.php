@@ -12,6 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('new', [MonitorController::class, 'new'])->name('monitors.new');
         Route::post('new', [MonitorController::class, 'create'])->name('monitors.create');
         Route::post('delete', [MonitorController::class, 'delete'])->name('monitors.delete');
+        Route::get('run-ondemand', [MonitorController::class, 'runMonitorsOnDemand'])->name('monitors.run-ondemand');
     });
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
