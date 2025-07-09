@@ -36,13 +36,22 @@ a {
 .monitor-status-good {
     color: rgb(37, 171, 37);
 }
+.monitor-status-good-bg {
+    background-color: lighten(rgb(37, 171, 37), 33%);
+}
 
 .monitor-status-bad {
     color: rgb(203, 54, 54);
 }
+.monitor-status-bad-bg {
+    background-color: lighten(rgb(203, 54, 54), 33%);
+}
 
 .monitor-status-warning {
     color: rgb(213, 152, 47);
+}
+.monitor-status-warning-bg {
+    background-color: lighten(rgb(213, 152, 47), 33%);
 }
 
 h1 { font-size: 30px; }

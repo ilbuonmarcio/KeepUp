@@ -4,13 +4,13 @@
 <div class="card">
     @if(count($monitors))
     <div class="input-row columns-3">
-        <div class="card input-cell">
+        <div class="card input-cell monitor-status-good-bg">
             <h1><span class="monitor-status-good">Good: {{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 1; })->count() }}</span></h1>
         </div>
-        <div class="card input-cell">
+        <div class="card input-cell monitor-status-bad-bg">
             <h1><span class="monitor-status-bad">Bad: {{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 0; })->count() }}</span></h1>
         </div>
-         <div class="card input-cell">
+         <div class="card input-cell monitor-status-warning-bg">
             <h1><span class="monitor-status-warning">Updates available: {{ $monitors->map(function ($elem) { return $elem->updates_available; })->sum() }}</span></h1>
         </div>
     </div>
