@@ -40,12 +40,12 @@
                 <td>{{ $monitor->username }}</td>
                 <td>{{ $monitor->authMethod() }}</td>
                 <td>{{ $monitor->operating_system }}</td>
-                <td {!! $monitor->thresholdUptimeTriggered() ? 'class="table-cell-alert"' : '' !!}>{{ $monitor->uptime }} days</td>
-                <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="table-cell-alert"' : '' !!}>{{ $monitor->updates_available }}</td>
+                <td {!! $monitor->thresholdUptimeTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->uptime }} days</td>
+                <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->updates_available }}</td>
                 <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{{ $monitor->cpu_load }}</td>
                 <td><pre>{{ $monitor->disks_status }}</pre></td>
-                <td>{!! $monitor->status() !!}</td>
+                <td {!! $monitor->latest_check_positive == 1 ? 'class="monitor-status-good-bg"' : 'class="monitor-status-bad-bg"' !!}>{!! $monitor->status() !!}</td>
                 <td><button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button></td>
             </tr>
             @endforeach
