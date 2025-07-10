@@ -2,7 +2,7 @@
 
 ![KeepUp Logo](/public/images/logo.png)
 
-Your personal assistant for keeping your Linux systems up-to-date!
+Your personal, *agentless* assistant for keeping your Linux systems monitored and up-to-date!
 
 ## Features
 
@@ -11,6 +11,9 @@ Your personal assistant for keeping your Linux systems up-to-date!
     - Uptime
     - Updates available
     - IP addresses of the remote machine
+    - Disk usage
+    - CPU usage
+    - Weekly emails about monitor status
 
 ## Screenshots
 
@@ -21,7 +24,7 @@ Your personal assistant for keeping your Linux systems up-to-date!
 
 For now, everything needed from my side is currently implemented, but you're very welcome to contribute to the project by opening a PR!
 
-Ideas worth mentioning:
+Ideas worth mentioning, that would be good to implement:
 
 - [x] History of changes between a monitor check and the next one, via a separate versioned data table (uptime, number of updates)
 - [x] Summary status of Good, Bad on the top side of Dashboard section
