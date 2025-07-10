@@ -29,7 +29,7 @@
         </thead>
         <tbody>
             @foreach($monitors as $monitor)
-            <tr style="margin-bottom: 1px solid #00000033; margin-right: 1px solid #00000039;">
+            <tr>
                 <td {!! $monitor->latest_check_positive == 1 ? 'style="color: green;"' : 'style="color: red;"' !!}>{{ $monitor->name }}</td>
                 <td>{{ $monitor->hostname_ip }}</td>
                 <td>{{ $monitor->username }}</td>
@@ -40,7 +40,7 @@
                 <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{{ $monitor->cpu_load }}</td>
                 <td><pre>{{ $monitor->disks_status }}</pre></td>
-                <td {!! $monitor->latest_check_positive == 1 ? 'style="color: green;"' : 'style="color: red;"' !!}>{!! $monitor->status() !!}</td>
+                <td {!! $monitor->latest_check_positive == 1 ? 'style="color: green; background-color: #00ff0022;"' : 'style="color: red; background-color: #ff000022;"' !!}>{!! $monitor->status() !!}</td>
             </tr>
             @endforeach
         </tbody>
