@@ -15,6 +15,16 @@ Your personal, *agentless* assistant for keeping your Linux systems monitored an
     - CPU usage
     - Weekly emails about monitor status
 
+## Operating Systems supported
+
+For now, we integrated with:
+
+- Debian
+- Ubuntu
+- Arch Linux
+
+Feel free to make a PR to integrate with other operating systems, like SUSE and RHEL!
+
 ## Screenshots
 
 ![Dashboard view](/screenshots/dashboard.png)
