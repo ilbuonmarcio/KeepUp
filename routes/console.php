@@ -2,4 +2,5 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('app:monitor')->daily();
+Schedule::command('app:monitor')->dailyAt('08:00');
+Schedule::command('app:send-email-monitor-recap')->dailyAt('10:30');
