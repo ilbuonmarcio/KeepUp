@@ -87,6 +87,10 @@ button, a.button {
     &.confirm {
         background-color: $purpleBrandColor;
         color: $white;
+
+        svg path {
+            fill: $white;
+        }
     }
     &.abort {
         background-color: darken($white, 10%);
@@ -204,6 +208,10 @@ table {
 
             background-color: $purpleBrandColor;
 
+            svg path {
+                fill: $white;
+            }
+
             height: 100%;
 
             a {
@@ -250,6 +258,22 @@ table {
     overflow-x: auto;
 }
 
-svg path {
-    fill: $white;
+svg.color-debian {
+    path {
+        fill: #D70A53 !important;
+    }
+}
+
+svg.color-ubuntu {
+    path {
+        fill: #dd4814 !important;
+    }
+}
+
+.os-line div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    column-gap: 10px;
 }

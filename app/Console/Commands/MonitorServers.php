@@ -47,6 +47,7 @@ class MonitorServers extends Command
                     'connected_successfully' => false,
                     'hostname_ip' => $system['hostname_ip'],
                     'operating_system' => null,
+                    'operating_system_full_version' => null,
                     'updates_available' => null,
                     'uptime' => null,
                     'ip_addresses' => null,
@@ -69,7 +70,7 @@ class MonitorServers extends Command
                     continue;
                 }
 
-                $request = $process->execute('cat /etc/*-release | grep "^NAME="');
+                $request = $process->execute('cat /etc/*-release | grep "^PRETTY_NAME="');
 
                 if(!$request->isSuccessful()) {
                     Log::channel('monitors_stacked')->error("Monitor for system [$system->name] encountered an error");
@@ -88,6 +89,9 @@ class MonitorServers extends Command
                     } elseif(Str::contains($output, 'Ubuntu')) {
                         $result['operating_system'] = 'Ubuntu';
                     }
+
+                    // Save also os name full label for system version control and EOL
+                    $result['operating_system_full_version'] = Str::replace("PRETTY_NAME=", "", Str::replace("\"", "", $output));
 
                     // Find out uptime and ip addresses
                     // Find out cpu load average
@@ -139,6 +143,7 @@ class MonitorServers extends Command
                     // Saving to database
                     $system->latest_check_positive = 0;
                     $system->operating_system = null;
+                    $system->operating_system_full_version = null;
                     $system->updates_available = null;
                     $system->uptime = null;
                     $system->ip_addresses = null;
@@ -148,6 +153,7 @@ class MonitorServers extends Command
                     // Saving to database
                     $system->latest_check_positive = 1;
                     $system->operating_system = $result['operating_system'];
+                    $system->operating_system_full_version = $result['operating_system_full_version'];
                     $system->updates_available = $result['updates_available'];
                     $system->uptime = $result['uptime'];
                     $system->ip_addresses = json_encode($result['ip_addresses']);
@@ -171,6 +177,7 @@ class MonitorServers extends Command
                 // Saving the failure
                 $system->latest_check_positive = 0;
                 $system->operating_system = null;
+                $system->operating_system_full_version = null;
                 $system->updates_available = null;
                 $system->uptime = null;
                 $system->ip_addresses = null;

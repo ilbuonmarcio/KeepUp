@@ -39,7 +39,7 @@
                 <td>{{ $monitor->hostname_ip }}</td>
                 <td>{{ $monitor->username }}</td>
                 <td>{{ $monitor->authMethod() }}</td>
-                <td>{{ $monitor->operating_system }}</td>
+                <td class="os-line"><div>{!! $monitor->asIcon() !!} {{ $monitor->operating_system_full_version }}</div></td>
                 <td {!! $monitor->thresholdUptimeTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->uptime }} days</td>
                 <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->updates_available }}</td>
                 <td>{!! $monitor->ipAddresses() !!}</td>

@@ -74,4 +74,21 @@ class Monitor extends Model
     public function sshKeyDecryptFlush() {
         Storage::disk('private_keys')->delete($this->ssh_private_key . '.decrypt');
     }
+
+    public function asIcon() {
+        switch($this->operating_system) {
+            case 'Debian': {
+                return '<i class="fa-brands fa-debian color-debian"></i>';
+            }
+            case 'Ubuntu': {
+                return '<i class="fa-brands fa-ubuntu color-ubuntu"></i>';
+            }
+            case 'Arch Linux': {
+                return '<img src="/images/os-icons/archlinux.svg"/ style="height:1em; vertical-align:-0.1em;">';
+            }
+            default: {
+                return '';
+            }
+        }
+    }
 }
