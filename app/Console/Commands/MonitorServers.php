@@ -52,7 +52,9 @@ class MonitorServers extends Command
                     'uptime' => null,
                     'ip_addresses' => null,
                     'cpu_load' => null,
-                    'disks_status' => null
+                    'disks_status' => null,
+                    'docker_daemon_running' => null,
+                    'docker_active_containers' => null
                 );
 
                 $process = Ssh::create($system['username'], $system['hostname_ip'])
@@ -96,6 +98,8 @@ class MonitorServers extends Command
                     // Find out uptime and ip addresses
                     // Find out cpu load average
                     // Find out memory consumption
+                    // Find out disk status
+                    // Find out if docker daemon is running
                     if(collect(['Debian', 'Arch Linux', 'Ubuntu'])->contains($result['operating_system'])) {
                         $request = $process->execute('awk \'{printf "%.2f", $1/86400}\' /proc/uptime');
 
@@ -119,6 +123,20 @@ class MonitorServers extends Command
 
                         if($request->isSuccessful()) {
                             $result['disks_status'] = $request->getOutput();
+                        }
+
+                        $request = $process->execute('docker info >/dev/null 2>&1 && echo "1" || echo "0"');
+
+                        if($request->isSuccessful()) {
+                            $result['docker_daemon_running'] = Str::replace("\n", '', $request->getOutput());
+
+                            if($result['docker_daemon_running'] == 1) {
+                                $request = $process->execute('docker ps -q | wc -l');
+
+                                if($request->isSuccessful()) {
+                                    $result['docker_active_containers'] = Str::replace("\n", '', $request->getOutput());
+                                }
+                            }
                         }
                     }
 
@@ -149,6 +167,8 @@ class MonitorServers extends Command
                     $system->ip_addresses = null;
                     $system->cpu_load = null;
                     $system->disks_status = null;
+                    $system->docker_daemon_running = null;
+                    $system->docker_active_containers = null;
                 } else {
                     // Saving to database
                     $system->latest_check_positive = 1;
@@ -159,6 +179,8 @@ class MonitorServers extends Command
                     $system->ip_addresses = json_encode($result['ip_addresses']);
                     $system->cpu_load = $result['cpu_load'];
                     $system->disks_status = $result['disks_status'];
+                    $system->docker_daemon_running = $result['docker_daemon_running'];
+                    $system->docker_active_containers = $result['docker_active_containers'];
                 }
 
                 $system->latest_successful_check = Carbon::now();
@@ -183,6 +205,8 @@ class MonitorServers extends Command
                 $system->ip_addresses = null;
                 $system->cpu_load = null;
                 $system->disks_status = null;
+                $system->docker_daemon_running = null;
+                $system->docker_active_containers = null;
                 $system->save();
             }
 

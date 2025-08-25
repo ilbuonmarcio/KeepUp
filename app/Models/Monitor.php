@@ -25,8 +25,18 @@ class Monitor extends Model
         if(is_null($this->ip_addresses)) {
             return '-';
         } else {
+            $str = '';
             $ips = collect(json_decode($this->ip_addresses, JSON_OBJECT_AS_ARRAY));
-            return $ips->join('<br>');
+            foreach($ips as $ip) {
+                $isPublicIp = filter_var(
+                    explode('/', $ip)[0],
+                    FILTER_VALIDATE_IP,
+                    FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+                ) !== false;
+
+                $str .= '<div class="' . ($isPublicIp ? 'is-public-ip' : '') . '" ' . ($isPublicIp ? 'title="Public IP"' : '') . '>' . $ip . '</div>';
+            }
+            return $str;
         }
     }
 

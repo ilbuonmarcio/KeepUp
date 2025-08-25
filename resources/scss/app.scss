@@ -270,10 +270,24 @@ svg.color-ubuntu {
     }
 }
 
+svg.color-docker {
+    path {
+        fill: #1D63ED !important;
+    }
+}
+
 .os-line div {
     display: flex;
     justify-content: flex-start;
     align-items: center;
 
     column-gap: 10px;
+}
+
+.is-public-ip {
+    color: white;
+    background-color: $purpleBrandColor;
+    padding: 6px;
+
+    border-radius: 6px;
 }
