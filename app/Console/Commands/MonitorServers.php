@@ -95,6 +95,19 @@ class MonitorServers extends Command
                     // Save also os name full label for system version control and EOL
                     $result['operating_system_full_version'] = Str::replace("PRETTY_NAME=", "", Str::replace("\"", "", $output));
 
+                    // Checks, if Debian, if it is a Proxmox server and overrides the info provided for the full version
+                    if($result['operating_system'] == 'Debian') {
+                        $request = $process->execute('[ -f /etc/pve/.version ] && echo "1" || echo "0"');
+
+                        if($request->isSuccessful() && Str::contains("1", $request->getOutput())) {
+                            $request = $process->execute('pveversion');
+
+                            if($request->isSuccessful() && Str::contains("1", $request->getOutput())) {
+                                $result['operating_system_full_version'] = Str::replace("\n", '', $request->getOutput());
+                            }
+                        }
+                    }
+
                     // Find out uptime and ip addresses
                     // Find out cpu load average
                     // Find out memory consumption

@@ -44,7 +44,7 @@ class Monitor extends Model
         if($this->latest_check_positive) {
             return '<div style="margin-top: 12px; !important; font-size: 12px;">Last good check:<br>' . Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i') . '</div>';
         } else {
-            return '<div>Last good check:<br>' . Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i') . '</div>';
+            return '<div style="margin-top: 12px; !important; font-size: 12px;">Last good check:<br>' . Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i') . '</div>';
         }
     }
 
