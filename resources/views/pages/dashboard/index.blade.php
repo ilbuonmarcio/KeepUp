@@ -19,10 +19,8 @@
 
     <table style="margin-top: 32px;">
         <thead>
-            <td>Name</td>
-            <td>Hostname/IP</td>
-            <td>Username</td>
-            <td>Auth Method</td>
+            <td>Name<br>(Hostname/IP)</td>
+            <td>Username<br>(Auth Method)</td>
             <td>Operating System</td>
             <td>Uptime</td>
             <td>Updates Available</td>
@@ -30,16 +28,20 @@
             <td>IP Addresses</td>
             <td>CPU Load</td>
             <td>Disks Status</td>
-            <td>Status</td>
             <td></td>
         </thead>
         <tbody>
             @foreach($monitors as $monitor)
             <tr>
-                <td><span class="monitor-status-{{ $monitor->latest_check_positive == 1 ? 'good' : 'bad' }}">{{ $monitor->name }}</td>
-                <td>{{ $monitor->hostname_ip }}</td>
-                <td>{{ $monitor->username }}</td>
-                <td>{{ $monitor->authMethod() }}</td>
+                <td {!! $monitor->latest_check_positive == 1 ? 'class="monitor-status-good-bg"' : 'class="monitor-status-bad-bg"' !!}>
+                    <div><span class="monitor-status-{{ $monitor->latest_check_positive == 1 ? 'good' : 'bad' }}">{{ $monitor->name }}</span></div>
+                    <div><small>({{ $monitor->hostname_ip }})</small></div>
+                    <div>{!! $monitor->status() !!}</div>
+                </td>
+                <td>
+                    <div>{{ $monitor->username }}</div>
+                    <div><small>{{ $monitor->authMethod() }}</small></div>
+                </td>
                 <td class="os-line"><div>{!! $monitor->asIcon() !!} {{ $monitor->operating_system_full_version }}</div></td>
                 <td {!! $monitor->thresholdUptimeTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->uptime }} days</td>
                 <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->updates_available }}</td>
@@ -47,7 +49,6 @@
                 <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{{ $monitor->cpu_load }}</td>
                 <td><pre>{{ $monitor->disks_status }}</pre></td>
-                <td {!! $monitor->latest_check_positive == 1 ? 'class="monitor-status-good-bg"' : 'class="monitor-status-bad-bg"' !!}>{!! $monitor->status() !!}</td>
                 <td><button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button></td>
             </tr>
             @endforeach
