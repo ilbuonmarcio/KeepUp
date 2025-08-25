@@ -36,6 +36,7 @@ For now, everything needed from my side is currently implemented, but you're ver
 
 Ideas worth mentioning, that would be good to implement:
 
+- [ ] Update mail view template with newly integrated data
 - [x] Operating system specific version, so we can check if systems are in EOL or not
 - [x] Docker service installed, and number of containers active (number should be enough) 
 - [x] Show if IP shown is a public IP or not, clearly
