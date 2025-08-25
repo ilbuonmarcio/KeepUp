@@ -99,11 +99,12 @@ class MonitorServers extends Command
                     if($result['operating_system'] == 'Debian') {
                         $request = $process->execute('[ -f /etc/pve/.version ] && echo "1" || echo "0"');
 
-                        if($request->isSuccessful() && Str::contains("1", $request->getOutput())) {
+                        if($request->isSuccessful() && Str::contains($request->getOutput(), "1")) {
                             $request = $process->execute('pveversion');
 
-                            if($request->isSuccessful() && Str::contains("1", $request->getOutput())) {
-                                $result['operating_system_full_version'] = Str::replace("\n", '', $request->getOutput());
+                            if($request->isSuccessful()) {
+                                $result['operating_system'] = 'Proxmox VE';
+                                $result['operating_system_full_version'] = Str::replace("pve-manager/", "Proxmox VE ", Str::replace("\n", '', $request->getOutput()));
                             }
                         }
                     }
@@ -113,7 +114,7 @@ class MonitorServers extends Command
                     // Find out memory consumption
                     // Find out disk status
                     // Find out if docker daemon is running
-                    if(collect(['Debian', 'Arch Linux', 'Ubuntu'])->contains($result['operating_system'])) {
+                    if(collect(['Debian', 'Arch Linux', 'Ubuntu', 'Proxmox VE'])->contains($result['operating_system'])) {
                         $request = $process->execute('awk \'{printf "%.2f", $1/86400}\' /proc/uptime');
 
                         if($request->isSuccessful()) {
@@ -154,7 +155,7 @@ class MonitorServers extends Command
                     }
 
                     // Find out how many updates do you have
-                    if(collect(['Debian', 'Ubuntu'])->contains($result['operating_system'])) {
+                    if(collect(['Debian', 'Ubuntu', 'Proxmox VE'])->contains($result['operating_system'])) {
                         $request = $process->execute('apt update > /dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
 
                         if($request->isSuccessful()) {

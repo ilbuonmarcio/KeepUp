@@ -96,6 +96,9 @@ class Monitor extends Model
             case 'Arch Linux': {
                 return '<img src="/images/os-icons/archlinux.svg"/ style="height:1em; vertical-align:-0.1em;">';
             }
+            case 'Proxmox VE': {
+                return '<img src="/images/os-icons/proxmox.svg"/ style="height:1em; vertical-align:-0.1em;">';
+            }
             default: {
                 return '';
             }
