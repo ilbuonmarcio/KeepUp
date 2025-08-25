@@ -13,6 +13,7 @@ Your personal, *agentless* assistant for keeping your Linux systems monitored an
     - IP addresses of the remote machine
     - Disk usage
     - CPU usage
+    - Docker system support and container list
     - Weekly emails about monitor status
 
 ## Operating Systems supported
@@ -22,6 +23,7 @@ For now, we integrated with:
 - Debian
 - Ubuntu
 - Arch Linux
+- Proxmox PVE
 
 Feel free to make a PR to integrate with other operating systems, like SUSE and RHEL!
 
