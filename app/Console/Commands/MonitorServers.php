@@ -133,7 +133,7 @@ class MonitorServers extends Command
                             $result['cpu_load'] = Str::replace("\n", '', $request->getOutput());
                         }
 
-                        $request = $process->execute('df -h | head -n 1; df -h | grep \'^/dev\' | grep -v \'^/dev/loop\'');
+                        $request = $process->execute('df -h | head -n 1; df -h');
 
                         if($request->isSuccessful()) {
                             $result['disks_status'] = $request->getOutput();
