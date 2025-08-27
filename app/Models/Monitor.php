@@ -78,7 +78,6 @@ class Monitor extends Model
         // Save temporarily
         Storage::disk('private_keys')->put($this->ssh_private_key . '.decrypt', $decrypted);
         chmod(storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key . '.decrypt'), 0600);
-        chown(storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key . '.decrypt'), 'www-data');
     }
 
     public function sshKeyDecryptFlush() {

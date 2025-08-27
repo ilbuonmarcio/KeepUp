@@ -156,7 +156,7 @@ class MonitorServers extends Command
 
                     // Find out how many updates do you have
                     if(collect(['Debian', 'Ubuntu', 'Proxmox VE'])->contains($result['operating_system'])) {
-                        $request = $process->execute('apt update > /dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
+                        $request = $process->execute('apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
 
                         if($request->isSuccessful()) {
                             $result['updates_available'] = Str::replace("\n", '', $request->getOutput());
@@ -207,7 +207,7 @@ class MonitorServers extends Command
                 }
                 
                 Log::channel('monitors_stacked')->info("Monitor for system [$system->name] checked in $system->check_time ms");
-            } catch (Exception $e) {
+	    } catch (Exception $e) {
                 Log::channel('monitors_stacked')->error("Error while checking monitor for system [$system->name]");
 
                 // Saving the failure

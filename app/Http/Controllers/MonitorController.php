@@ -59,7 +59,7 @@ class MonitorController extends Controller
             $file = $request->file('ssh_private_key');
             $encryptedContent = Crypt::encryptString($file->getContent());
             Storage::disk('private_keys')->put($key_filename, $encryptedContent);
-            chmod(storage_path('app/private/ssh_private_keys/' . $key_filename), 0600);
+            chmod(storage_path('app/private/ssh_private_keys/' . $key_filename), 0770);
 
             $monitor->ssh_private_key = $key_filename;
         }
