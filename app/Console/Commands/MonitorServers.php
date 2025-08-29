@@ -36,7 +36,7 @@ class MonitorServers extends Command
         $systems = Monitor::get();
 
         foreach($systems as $system) {
-            if(Carbon::parse($system->updated_at)->diffInMinutes(Carbon::now()) < 60) {
+            if(Carbon::parse($system->updated_at)->diffInMinutes(Carbon::now()) < 60 && !is_null($system->operating_system)) {
                 Log::channel('monitors_stacked')->info("Skipping monitor for system [$system->name] due to it being too recent");
                 continue;
             }
