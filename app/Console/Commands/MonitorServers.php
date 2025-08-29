@@ -207,8 +207,8 @@ class MonitorServers extends Command
                 }
                 
                 Log::channel('monitors_stacked')->info("Monitor for system [$system->name] checked in $system->check_time ms");
-	    } catch (Exception $e) {
-                Log::channel('monitors_stacked')->error("Error while checking monitor for system [$system->name]");
+	        } catch (Exception $e) {
+                Log::channel('monitors_stacked')->error("Error while checking monitor for system [$system->name]", [$e->getMessage()]);
 
                 // Saving the failure
                 $system->latest_check_positive = 0;
