@@ -38,6 +38,11 @@ For now, everything needed from my side is currently implemented, but you're ver
 
 Ideas worth mentioning, that would be good to implement:
 
+- [ ] Add docker-compose.yml official file for easier deployment of the whole stack
+- [ ] Add LDAP/SSO login support/integration
+- [ ] Add labels (maybe even multiple) support for monitored servers
+- [ ] Add Credentials section to use a single private key file for multiple machines
+- [ ] Add Windows clients/servers support
 - [ ] Update mail view template with newly integrated data
 - [x] Add Proxmox PVE support
 - [x] Operating system specific version, so we can check if systems are in EOL or not
