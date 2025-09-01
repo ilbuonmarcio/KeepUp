@@ -23,6 +23,6 @@ class RunMonitorOnDemand implements ShouldQueue
      */
     public function handle(): void
     {
-        Artisan::call('app:monitor');
+        Artisan::call('app:monitor --force');
     }
 }
