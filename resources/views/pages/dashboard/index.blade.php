@@ -65,10 +65,15 @@
     $('button[data-action="delete-monitor"]').on('dblclick', function () {
         var idMonitor = $(this).attr('data-id-monitor');
 
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
         $.ajax({
             method: 'post',
             url: '/monitors/delete',
             dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+            },
             data: {
                 id_monitor: idMonitor
             },
