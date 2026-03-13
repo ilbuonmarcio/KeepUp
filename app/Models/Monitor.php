@@ -42,10 +42,18 @@ class Monitor extends Model
 
     public function firewallRules() {
         if(is_null($this->firewall_rules)) {
-            return '<span class="warning"><i class="fas fa-warning"></i> UFW Not Installed</span>';
+            return '<span class="notify-label"><i class="fas fa-warning"></i> UFW Not Installed</span>';
         } else {
             $str = '';
             $rows = collect(json_decode($this->firewall_rules, JSON_OBJECT_AS_ARRAY));
+
+            if(count($rows) == 0) {
+                return '<span class="notify-label"><i class="fas fa-warning"></i> UFW Not Installed</span>';
+            }
+            if($rows->first() == "Status: inactive") {
+                return '<span class="warning-label"><i class="fas fa-warning"></i> UFW inactive</span>';
+            }
+
             foreach($rows as $row) {
                 if(strlen($row) == 0) {
                     $str .= '<br>';

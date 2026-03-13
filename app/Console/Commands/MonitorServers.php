@@ -61,7 +61,8 @@ class MonitorServers extends Command
                     'cpu_load' => null,
                     'disks_status' => null,
                     'docker_daemon_running' => null,
-                    'docker_active_containers' => null
+                    'docker_active_containers' => null,
+                    'firewall_rules' => null
                 );
 
                 $process = Ssh::create($system['username'], $system['hostname_ip'])

@@ -293,9 +293,17 @@ svg.color-docker {
     border-radius: 6px;
 }
 
-.warning {
+.warning-label {
     background-color: $orange;
     color: #505050;
+
+    padding: 8px;
+    border-radius: 12px;
+}
+
+.notify-label {
+    background-color: #a0a0a0;
+    color: #f0f0f0;
 
     padding: 8px;
     border-radius: 12px;
