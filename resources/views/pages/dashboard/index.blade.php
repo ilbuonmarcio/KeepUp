@@ -19,11 +19,10 @@
 
     <table style="margin-top: 32px;">
         <thead>
-            <td>Name<br>(Hostname/IP)</td>
-            <td>Username<br>(Auth Method)</td>
+            <td>Name (Hostname/IP)<hr><small>Username (Auth Method)</small></td>
             <td>Operating System</td>
-            <td>Uptime</td>
             <td>Updates Available</td>
+            <td>Uptime</td>
             <td><i class="fa-brands fa-docker color-docker"></i></td>
             <td>Firewall (UFW)</td>
             <td>IP Addresses</td>
@@ -38,14 +37,15 @@
                     <div><span class="monitor-status-{{ $monitor->latest_check_positive == 1 ? 'good' : 'bad' }}">{{ $monitor->name }}</span></div>
                     <div><small>({{ $monitor->hostname_ip }})</small></div>
                     <div>{!! $monitor->status() !!}</div>
-                </td>
-                <td>
-                    <div>{{ $monitor->username }}</div>
-                    <div><small>{{ $monitor->authMethod() }}</small></div>
+                    <br>
+                    <small>
+                        <div>{{ $monitor->username }}</div>
+                        <div><small>{{ $monitor->authMethod() }}</small></div>
+                    </small>
                 </td>
                 <td class="os-line"><div>{!! $monitor->asIcon() !!} {{ $monitor->operating_system_full_version }}</div></td>
-                <td {!! $monitor->thresholdUptimeTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->uptime }} days</td>
                 <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->updates_available }}</td>
+                <td {!! $monitor->thresholdUptimeTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->uptime }} days</td>
                 <td>{{ $monitor->docker_daemon_running == 1 ? 'Yes' : 'No' }} @if($monitor->docker_daemon_running == 1) ({{ $monitor->docker_active_containers }}) @endif</td>
                 <td>
                     {!! $monitor->firewallRules() !!}
