@@ -40,6 +40,22 @@ class Monitor extends Model
         }
     }
 
+    public function firewallRules() {
+        if(is_null($this->firewall_rules)) {
+            return '<span class="warning"><i class="fas fa-warning"></i> UFW Not Installed</span>';
+        } else {
+            $str = '';
+            $rows = collect(json_decode($this->firewall_rules, JSON_OBJECT_AS_ARRAY));
+            foreach($rows as $row) {
+                if(strlen($row) == 0) {
+                    $str .= '<br>';
+                }
+                $str .= '<pre>' . $row . '</pre>';
+            }
+            return $str;
+        }
+    }
+
     public function status() {
         if($this->latest_check_positive) {
             return '<div style="margin-top: 12px; !important; font-size: 12px;">Last good check:<br>' . Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i') . '</div>';

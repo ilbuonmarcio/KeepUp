@@ -5,6 +5,7 @@ $creditsHeight: 40px;
 $purpleBrandColor: rgb(89, 36, 229);
 $white: rgb(242, 242, 242);
 $black: rgb(55, 55, 55);
+$orange: rgb(239, 189, 39);
 
 html, body {
     * {
@@ -290,4 +291,12 @@ svg.color-docker {
     padding: 6px;
 
     border-radius: 6px;
+}
+
+.warning {
+    background-color: $orange;
+    color: #505050;
+
+    padding: 8px;
+    border-radius: 12px;
 }

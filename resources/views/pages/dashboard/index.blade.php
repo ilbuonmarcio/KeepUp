@@ -25,6 +25,7 @@
             <td>Uptime</td>
             <td>Updates Available</td>
             <td><i class="fa-brands fa-docker color-docker"></i></td>
+            <td>Firewall (UFW)</td>
             <td>IP Addresses</td>
             <td>CPU Load</td>
             <td>Disks Status</td>
@@ -46,6 +47,9 @@
                 <td {!! $monitor->thresholdUptimeTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->uptime }} days</td>
                 <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->updates_available }}</td>
                 <td>{{ $monitor->docker_daemon_running == 1 ? 'Yes' : 'No' }} @if($monitor->docker_daemon_running == 1) ({{ $monitor->docker_active_containers }}) @endif</td>
+                <td>
+                    {!! $monitor->firewallRules() !!}
+                </td>
                 <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{{ $monitor->cpu_load }}</td>
                 <td><pre>{{ $monitor->disks_status }}</pre></td>

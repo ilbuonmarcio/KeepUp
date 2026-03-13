@@ -159,6 +159,12 @@ class MonitorServers extends Command
                                 }
                             }
                         }
+
+                        $request = $process->execute('which ufw > /dev/null && ufw status numbered');
+
+                        if($request->isSuccessful()) {
+                            $result['firewall_rules'] = Str::of($request->getOutput())->explode("\n")->slice(0, -1)->toArray();
+                        }
                     }
 
                     // Find out how many updates do you have
@@ -190,6 +196,7 @@ class MonitorServers extends Command
                     $system->disks_status = null;
                     $system->docker_daemon_running = null;
                     $system->docker_active_containers = null;
+                    $system->firewall_rules = null;
                 } else {
                     // Saving to database
                     $system->latest_check_positive = 1;
@@ -202,6 +209,7 @@ class MonitorServers extends Command
                     $system->disks_status = $result['disks_status'];
                     $system->docker_daemon_running = $result['docker_daemon_running'];
                     $system->docker_active_containers = $result['docker_active_containers'];
+                    $system->firewall_rules = json_encode($result['firewall_rules']);
                 }
 
                 $system->latest_successful_check = Carbon::now();
