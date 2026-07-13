@@ -37,6 +37,21 @@ test('a user can request a refresh for a specific monitor', function () {
     );
 });
 
+test('a user can request a scan for all monitors', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('monitors.run-ondemand'))
+        ->assertRedirect('/');
+
+    Bus::assertDispatched(
+        RunMonitorOnDemand::class,
+        fn (RunMonitorOnDemand $job) => $job->monitorId === null,
+    );
+});
+
 test('guests cannot request a monitor refresh', function () {
     Bus::fake();
 
@@ -58,10 +73,12 @@ test('the refresh job scans only its requested monitor', function () {
 });
 
 test('refresh jobs queued before monitor targeting remain compatible', function () {
-    $legacyJob = new RunMonitorOnDemand;
-    unset($legacyJob->monitorId);
+    Artisan::shouldReceive('call')
+        ->once()
+        ->with('app:monitor', ['--force' => true])
+        ->andReturn(Command::SUCCESS);
 
-    $restoredJob = unserialize(serialize($legacyJob));
+    $legacyJob = unserialize('O:27:"App\\Jobs\\RunMonitorOnDemand":0:{}');
 
-    expect($restoredJob->monitorId)->toBeNull();
+    $legacyJob->handle();
 });

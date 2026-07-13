@@ -27,10 +27,13 @@ class RunMonitorOnDemand implements ShouldQueue
      */
     public function handle(): void
     {
+        // Jobs queued before per-monitor scans were introduced have no
+        // monitorId property in their serialized payload.
+        $monitorId = $this->monitorId ?? null;
         $parameters = ['--force' => true];
 
-        if ($this->monitorId !== null) {
-            $parameters['--monitor'] = $this->monitorId;
+        if ($monitorId !== null) {
+            $parameters['--monitor'] = $monitorId;
         }
 
         if (Artisan::call('app:monitor', $parameters) !== Command::SUCCESS) {
