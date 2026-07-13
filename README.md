@@ -1,130 +1,142 @@
 # KeepUp
 
-![KeepUp Logo](/public/images/logo.png)
-
-Your personal, *agentless* assistant for keeping your Linux systems monitored and up-to-date!
+KeepUp is a self-hosted, agentless dashboard for monitoring Linux servers over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
 
 ## Features
 
-- Add, edit, remove and monitor systems remotely via SSH password-based authentication and private-key-based authentication. Passwords and private keys are encrypted at rest, and stored private keys can be reused across multiple monitors. KeepUp automatically collects:
-    - Operating System
-    - Uptime
-    - Updates available
-    - IP addresses of the remote machine
-    - Disk usage
-    - CPU usage
-    - Docker system support and container list
-- Organize monitors with multiple color-coded labels and quick dashboard filters.
+### Server monitoring
 
-## Operating Systems supported
+- Add, edit and delete monitored servers.
+- Connect over SSH using a password or private key.
+- Reuse an encrypted private key across multiple monitors.
+- Scan every monitor on demand or request a scan for one specific monitor.
+- Run scheduled scans daily at `08:00` in the application's configured timezone.
+- Automatically refresh the dashboard every five minutes.
 
-For now, we integrated with:
+For each supported server, KeepUp collects:
+
+- Distribution name and full operating-system version.
+- Uptime in days.
+- Number of available package updates.
+- IPv4 addresses reported by the server.
+- CPU load averages.
+- Disk usage and available space.
+- Whether the Docker daemon is running and how many containers are active.
+- UFW status and rules when UFW is installed and accessible to the SSH user.
+
+### Dashboard
+
+- At-a-glance totals for healthy monitors, unreachable monitors, available updates and all monitors.
+- Per-monitor warning thresholds for uptime and available updates.
+- Clear indicators when a server reports a public IP and whether UFW appears active.
+- Expandable technical details for network addresses, firewall rules and disk usage.
+- Alphabetical monitor ordering.
+- Multiple labels per monitor, with deterministic label colors and toggleable dashboard filters.
+- Last scan time plus successful-check snapshots of uptime, available updates and scan duration.
+
+### Credential protection
+
+- SSH passwords are encrypted at rest with Laravel's application encryption key.
+- Uploaded private keys are encrypted before being written to private storage.
+- A private key is decrypted into a temporary permission-restricted file only while its scan runs, then removed.
+- Docker keeps the database and encrypted private-key storage in persistent named volumes.
+
+Back up `APP_KEY` securely. Losing or changing it makes previously encrypted passwords and private keys unreadable.
+
+## Supported operating systems
 
 - Debian
 - Ubuntu
 - Arch Linux
-- Proxmox PVE
+- Proxmox VE
 
-Feel free to make a PR to integrate with other operating systems, like SUSE and RHEL!
+KeepUp currently targets these Linux distributions and expects SSH on the standard port `22`.
 
-## Docker deployment
+## Monitored-server requirements
 
-The included Docker Compose stack runs KeepUp with MySQL 8.4 LTS, a queue worker, the scheduler, persistent SSH-key storage, health checks and automatic database migrations. You need Docker Engine with the Compose v2 plugin, or Docker Desktop.
+The KeepUp host or containers must be able to reach each monitored server over SSH. The configured SSH user must be allowed to run the commands used for the selected distribution, including:
 
-1. From the project directory, copy the container environment template:
+- Standard system tools such as `cat`, `awk`, `ip`, `uptime` and `df`.
+- `apt` on Debian, Ubuntu and Proxmox VE, or `pacman` on Arch Linux.
+- `docker` when Docker status should be collected.
+- `ufw status` when firewall status should be collected.
+
+These optional Docker and UFW values depend on their commands being installed and usable by the configured account.
+
+## Run with Docker Compose
+
+The included stack runs the web application, MySQL 8.4, a queue worker and the Laravel scheduler. Database migrations run automatically when the application starts.
+
+### Requirements
+
+- Docker Desktop, or Docker Engine with the Compose v2 plugin.
+- A clone of this repository.
+
+### First start
+
+1. Copy the Docker environment template:
 
     ```bash
     cp .env.docker.example .env.docker
     ```
 
-2. Open `.env.docker` and configure the deployment:
+2. Configure `.env.docker`:
 
     - Set `APP_URL` to the URL used to access KeepUp.
-    - Replace `DB_PASSWORD` and `MYSQL_PASSWORD` with the same strong password.
-    - Set `MYSQL_ROOT_PASSWORD` to a different strong password.
+    - Give `DB_PASSWORD` and `MYSQL_PASSWORD` the same strong value.
+    - Set a different strong value for `MYSQL_ROOT_PASSWORD`.
 
-3. Build the application image and generate an application key:
+3. Build the image and generate the Laravel application key:
 
     ```bash
     docker compose build
     docker compose run --rm --no-deps app php artisan key:generate --show
     ```
 
-4. Paste the generated value, including its `base64:` prefix, into `APP_KEY` in `.env.docker`.
+4. Copy the generated value, including its `base64:` prefix, into `APP_KEY` in `.env.docker`.
 
-5. Start the stack and wait for its services to become healthy:
+5. Start the stack and wait for its services:
 
     ```bash
     docker compose up -d --wait
     ```
 
-6. Create the first login account using the secure interactive command:
+6. Create the first login account:
 
     ```bash
     docker compose exec app php artisan app:create-user
     ```
 
-7. Open `http://localhost:8000` and sign in with the account you created. You can confirm that every service is running with:
-
-    ```bash
-    docker compose ps
-    ```
+7. Open [http://localhost:8000](http://localhost:8000) and sign in.
 
 ### Custom port
 
-KeepUp is published on port `8000` by default. To use another port, update `APP_URL` accordingly and set `KEEPUP_PORT` when starting the stack:
+KeepUp is published on port `8000` by default. To use another port, update `APP_URL` and set `KEEPUP_PORT` when starting the stack:
 
 ```bash
 KEEPUP_PORT=8080 docker compose up -d --wait
 ```
 
-### Managing the stack
+### Operations
 
 ```bash
+# Show service status
+docker compose ps
+
 # Follow logs from every service
 docker compose logs -f
 
-# Rebuild and apply a project update
+# Rebuild and restart after updating the project
 docker compose up -d --build --wait
 
-# Stop the stack without deleting its data
+# Stop without deleting persistent data
 docker compose down
 ```
 
-The database and encrypted SSH keys are stored in named Docker volumes and survive a normal `docker compose down`. Running `docker compose down --volumes` permanently deletes those volumes, including the database and stored SSH keys.
+The database and encrypted SSH keys survive a normal `docker compose down`. Running `docker compose down --volumes` permanently deletes both named volumes and their data.
 
-## Screenshots
+## License
 
-![Dashboard view](/screenshots/dashboard.png)
-![Monitor creation view](/screenshots/monitor_creation.png)
+KeepUp is licensed under the [MIT License](LICENSE).
 
-## Roadmap
-
-For now, everything needed from my side is currently implemented, but you're very welcome to contribute to the project by opening a PR!
-
-Ideas worth mentioning, that would be good to implement:
-
-- [x] Add an official Docker Compose stack for easier deployment
-- [ ] Add LDAP/SSO login support/integration
-- [x] Add multiple labels and quick label filters for monitored servers
-- [x] Reuse a securely stored private key across multiple monitored machines
-- [ ] Add Windows clients/servers support
-- [x] Add Proxmox PVE support
-- [x] Operating system specific version, so we can check if systems are in EOL or not
-- [x] Docker service installed, and number of containers active (number should be enough) 
-- [x] Show if IP shown is a public IP or not, clearly
-- [x] History of changes between a monitor check and the next one, via a separate versioned data table (uptime, number of updates)
-- [x] Summary status of Good, Bad on the top side of Dashboard section
-- [x] Add single Monitor alert for number of update threshold, uptime threshold
-- [x] Add cumulative stats for updates available
-- [x] Add password encryption
-- [x] Add ssh private key encryption
-- [x] Get cumulative volatile memory status, disk(s) space left and system load
-- [x] Add manual refresh button on dashboard + last refresh + auto refresh page on 5 minutes on dashboard
-- [x] Add a manual refresh request button for each monitor in the main table
-
-# License
-
-This software is licensed under MIT license. See `LICENSE` file for more information.
-
-This software is based on the [Laravel Framework](https://laravel.com), all rights reserved to the respective license owners.
+KeepUp is built with the [Laravel Framework](https://laravel.com); Laravel remains the property of its respective copyright holders.
