@@ -53,7 +53,12 @@
                 <td>{!! $monitor->ipAddresses() !!}</td>
                 <td>{{ $monitor->cpu_load }}</td>
                 <td><pre>{{ $monitor->disks_status }}</pre></td>
-                <td><button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button></td>
+                <td>
+                    <div class="monitor-actions">
+                        <button type="button" class="confirm" data-action="refresh-monitor" data-id-monitor="{{ $monitor->id }}">Refresh Monitor</button>
+                        <button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button>
+                    </div>
+                </td>
             </tr>
             @endforeach
         </tbody>
@@ -66,6 +71,39 @@
 
 @section('page-js')
 <script>
+    $('button[data-action="refresh-monitor"]').on('click', function () {
+        var idMonitor = $(this).attr('data-id-monitor');
+        var button = $(this);
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        button.prop('disabled', true).text('Requesting...');
+
+        $.ajax({
+            method: 'post',
+            url: '/monitors/' + idMonitor + '/refresh',
+            dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+            },
+            success: function (data) {
+                if(!data.status) {
+                    button.prop('disabled', false).text('Refresh Monitor');
+                    toastr.error("Could not request monitor refresh", "Monitor Refresh Error");
+                    return;
+                }
+
+                button.text('Refresh Requested');
+                toastr.success("The monitor refresh was queued successfully.", "Monitor Refresh");
+            },
+            error: function (error) {
+                console.error(error);
+                button.prop('disabled', false).text('Refresh Monitor');
+                toastr.error("Could not request monitor refresh", "Monitor Refresh Error");
+            }
+        });
+    });
+
     $('button[data-action="delete-monitor"]').on('dblclick', function () {
         var idMonitor = $(this).attr('data-id-monitor');
 

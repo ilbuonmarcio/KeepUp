@@ -57,6 +57,7 @@ Ideas worth mentioning, that would be good to implement:
 - [x] Send reports via e-mail on a weekly basis
 - [x] Get cumulative volatile memory status, disk(s) space left and system load
 - [x] Add manual refresh button on dashboard + last refresh + auto refresh page on 5 minutes on dashboard
+- [x] Add a manual refresh request button for each monitor in the main table
 
 # License
 

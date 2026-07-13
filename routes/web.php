@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitorController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -12,6 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('new', [MonitorController::class, 'new'])->name('monitors.new');
         Route::post('new', [MonitorController::class, 'create'])->name('monitors.create');
         Route::post('delete', [MonitorController::class, 'delete'])->name('monitors.delete');
+        Route::post('{monitor}/refresh', [MonitorController::class, 'refresh'])->name('monitors.refresh');
         Route::get('run-ondemand', [MonitorController::class, 'runMonitorsOnDemand'])->name('monitors.run-ondemand');
     });
 

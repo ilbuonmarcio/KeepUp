@@ -111,6 +111,22 @@ button, a.button {
     }
 }
 
+.monitor-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    button {
+        margin: 0;
+        white-space: nowrap;
+
+        &:disabled {
+            cursor: wait;
+            opacity: 0.65;
+        }
+    }
+}
+
 input, textarea, select {
     border-radius: 10px !important;
     padding: 12px !important;
