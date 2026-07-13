@@ -71,10 +71,37 @@
                             <tr class="monitor-row">
                                 <td data-label="Monitor">
                                     <div class="monitor-identity">
+                                        <button
+                                            type="button"
+                                            class="details-toggle"
+                                            data-action="toggle-monitor-details"
+                                            data-id-monitor="{{ $monitor->id }}"
+                                            data-monitor-name="{{ $monitor->name }}"
+                                            aria-controls="monitor-details-{{ $monitor->id }}"
+                                            aria-expanded="false"
+                                            title="System details"
+                                            aria-label="Show system details for {{ $monitor->name }}"
+                                        ><i class="fas fa-chevron-right"></i></button>
                                         <span class="status-dot {{ $monitor->latest_check_positive ? 'is-healthy' : 'is-unreachable' }}"></span>
                                         <div>
                                             <strong>{{ $monitor->name }}</strong>
-                                            <span>{{ $monitor->username }}&#64;{{ $monitor->hostname_ip }}</span>
+                                            <div class="monitor-meta">
+                                                <span class="monitor-address">{{ $monitor->username }}&#64;{{ $monitor->hostname_ip }}</span>
+                                                <span class="security-hints">
+                                                    <span
+                                                        class="security-indicator {{ $monitor->hasPublicIp() ? 'has-public-ip' : 'private-only' }}"
+                                                        role="img"
+                                                        aria-label="{{ $monitor->hasPublicIp() ? 'Public IP detected' : 'No public IP detected' }}"
+                                                        title="{{ $monitor->hasPublicIp() ? 'Public IP detected' : 'No public IP detected' }}"
+                                                    ><i class="fas fa-globe"></i></span>
+                                                    <span
+                                                        class="security-indicator {{ $monitor->firewallIsActive() ? 'firewall-active' : 'firewall-inactive' }}"
+                                                        role="img"
+                                                        aria-label="{{ $monitor->firewallIsActive() ? 'Firewall active' : 'Firewall inactive or unavailable' }}"
+                                                        title="{{ $monitor->firewallIsActive() ? 'Firewall active' : 'Firewall inactive or unavailable' }}"
+                                                    ><i class="fas fa-shield-halved"></i></span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -108,28 +135,25 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="monitor-details-row">
+                            <tr class="monitor-details-row" id="monitor-details-{{ $monitor->id }}" hidden>
                                 <td colspan="8">
-                                    <details class="monitor-details">
-                                        <summary><span>System details</span><i class="fas fa-chevron-down"></i></summary>
-                                        <div class="details-grid">
-                                            <section>
-                                                <h3>Connection</h3>
-                                                <dl>
-                                                    <div><dt>Authentication</dt><dd>{{ $monitor->authMethod() }}</dd></div>
-                                                    <div><dt>IP addresses</dt><dd>{!! $monitor->ipAddresses() !!}</dd></div>
-                                                </dl>
-                                            </section>
-                                            <section>
-                                                <h3>Firewall</h3>
-                                                <div class="technical-output">{!! $monitor->firewallRules() !!}</div>
-                                            </section>
-                                            <section class="details-wide">
-                                                <h3>Disk usage</h3>
-                                                <pre class="technical-output">{{ $monitor->disks_status ?: 'No disk information available.' }}</pre>
-                                            </section>
-                                        </div>
-                                    </details>
+                                    <div class="details-grid">
+                                        <section>
+                                            <h3>Connection</h3>
+                                            <dl>
+                                                <div><dt>Authentication</dt><dd>{{ $monitor->authMethod() }}</dd></div>
+                                                <div><dt>IP addresses</dt><dd>{!! $monitor->ipAddresses() !!}</dd></div>
+                                            </dl>
+                                        </section>
+                                        <section>
+                                            <h3>Firewall</h3>
+                                            <div class="technical-output">{!! $monitor->firewallRules() !!}</div>
+                                        </section>
+                                        <section class="details-wide">
+                                            <h3>Disk usage</h3>
+                                            <pre class="technical-output">{{ $monitor->disks_status ?: 'No disk information available.' }}</pre>
+                                        </section>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -150,6 +174,18 @@
 
 @section('page-js')
 <script>
+    $('button[data-action="toggle-monitor-details"]').on('click', function () {
+        var button = $(this);
+        var detailsRow = $('#monitor-details-' + button.attr('data-id-monitor'));
+        var isExpanded = button.attr('aria-expanded') === 'true';
+        var monitorName = button.attr('data-monitor-name');
+
+        button.attr('aria-expanded', !isExpanded);
+        button.attr('aria-label', (isExpanded ? 'Show' : 'Hide') + ' system details for ' + monitorName);
+        button.attr('title', isExpanded ? 'System details' : 'Hide system details');
+        detailsRow.prop('hidden', isExpanded);
+    });
+
     $('button[data-action="refresh-monitor"]').on('click', function () {
         var idMonitor = $(this).attr('data-id-monitor');
         var button = $(this);

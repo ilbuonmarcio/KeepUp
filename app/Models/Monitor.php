@@ -46,6 +46,32 @@ class Monitor extends Model
         }
     }
 
+    public function hasPublicIp(): bool
+    {
+        $addresses = json_decode($this->ip_addresses ?? '[]', true);
+
+        if (! is_array($addresses)) {
+            return false;
+        }
+
+        return collect($addresses)->contains(fn ($address) => filter_var(
+            explode('/', $address)[0],
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        ) !== false);
+    }
+
+    public function firewallIsActive(): bool
+    {
+        $rules = json_decode($this->firewall_rules ?? '[]', true);
+
+        if (! is_array($rules)) {
+            return false;
+        }
+
+        return collect($rules)->contains(fn ($rule) => trim($rule) === 'Status: active');
+    }
+
     public function firewallRules()
     {
         if (is_null($this->firewall_rules)) {
