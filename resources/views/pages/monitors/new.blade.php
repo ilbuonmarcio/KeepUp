@@ -1,32 +1,45 @@
 @extends('layouts.app')
 
 @section('page-content')
-<div class="card">
-    <h5>New Monitor</h5>
+<div class="page-container page-container-narrow">
+    <header class="page-header">
+        <div>
+            <a href="{{ route('dashboard.index') }}" class="back-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
+            <h1>Add monitor</h1>
+        </div>
+    </header>
+
+    <div class="panel form-panel">
+        <section class="form-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Connection details</h2>
+                </div>
+            </div>
 
     <div class="input-row columns-1">
         <div class="input-cell">
-            <label for="monitor-name">Monitor Name</label>
-            <input type="text" id="monitor-name" name="monitor-name" value="" autocomplete="off" placeholder="Insert your machine monitor name that will be used as a label on KeepUp"/>
+            <label for="monitor-name">Monitor name</label>
+            <input type="text" id="monitor-name" name="monitor-name" value="" autocomplete="off"/>
         </div>
     </div>
 
     <div class="input-row columns-3">
         <div class="input-cell">
-            <label for="monitor-hostname-ip">Hostname/IP</label>
-            <input type="text" id="monitor-hostname-ip" name="monitor-hostname-ip" value="" autocomplete="off" placeholder="Insert the remote machine's hostname or ip"/>
+            <label for="monitor-hostname-ip">Hostname or IP</label>
+            <input type="text" id="monitor-hostname-ip" name="monitor-hostname-ip" value="" autocomplete="off"/>
         </div>
 
         <div class="input-cell">
             <label for="monitor-username">Username</label>
-            <input type="text" id="monitor-username" name="monitor-username" value="" autocomplete="off" placeholder="Insert the remote machine's username with privileges compatible with KeepUp checking scripts"/>
+            <input type="text" id="monitor-username" name="monitor-username" value="" autocomplete="off"/>
         </div>
 
         <div class="input-cell">
-            <label for="monitor-auth-method">Auth Method</label>
+            <label for="monitor-auth-method">Authentication</label>
             <select id="monitor-auth-method" name="monitor-auth-method" autocomplete="off">
-                <option value="password" selected>Login via Password</option>
-                <option value="ssh_private_key">Login via SSH Private Key</option>
+                <option value="password" selected>Password</option>
+                <option value="ssh_private_key">SSH private key</option>
             </select>
         </div>
     </div>
@@ -34,13 +47,13 @@
     <div class="input-row columns-1">
         <div class="input-cell">
             <label for="monitor-password">Password</label>
-            <input type="password" id="monitor-password" name="monitor-password" value="" autocomplete="new-password" placeholder="Insert the remote machine's username related password for remote login"/>
+            <input type="password" id="monitor-password" name="monitor-password" value="" autocomplete="new-password"/>
         </div>
     </div>
 
     <div class="input-row columns-1">
         <div class="input-cell">
-            <label for="monitor-ssh-key-source">SSH Key</label>
+            <label for="monitor-ssh-key-source">Private key source</label>
             <select id="monitor-ssh-key-source" name="monitor-ssh-key-source" autocomplete="off">
                 <option value="upload" selected>Upload a new private key</option>
                 @foreach($sshKeySources as $keySource)
@@ -52,29 +65,39 @@
 
     <div class="input-row columns-1">
         <div class="input-cell">
-            <label for="monitor-ssh-private-key">SSH Private Key</label>
+            <label for="monitor-ssh-private-key">SSH private key</label>
             <input type="file" id="monitor-ssh-private-key" name="monitor-ssh-private-key" autocomplete="off"/>
             <small>The key is encrypted before it is stored. KeepUp only decrypts it temporarily while connecting.</small>
         </div>
     </div>
 
 
-    <h5>Monitor-specific thresholds</h5>
+        </section>
+
+        <section class="form-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Alert thresholds</h2>
+                </div>
+            </div>
     <div class="input-row columns-2">
         <div class="input-cell">
-            <label for="monitor-threshold-uptime">Uptime Threshold</label>
-            <input type="number" id="monitor-threshold-uptime" name="monitor-threshold-uptime" value="365" min="0" step="1" autocomplete="off" placeholder="Insert your machine monitor threshold for uptime"/>
+            <label for="monitor-threshold-uptime">Uptime threshold</label>
+            <input type="number" id="monitor-threshold-uptime" name="monitor-threshold-uptime" value="365" min="0" step="1" autocomplete="off"/>
         </div>
 
         <div class="input-cell">
-            <label for="monitor-threshold-updates-available">Updates Available Threshold</label>
-            <input type="number" id="monitor-threshold-updates-available" name="monitor-threshold-updates-available" value="1" min="1" step="1" autocomplete="off" placeholder="Insert your machine monitor threshold for updates available"/>
+            <label for="monitor-threshold-updates-available">Updates threshold</label>
+            <input type="number" id="monitor-threshold-updates-available" name="monitor-threshold-updates-available" value="1" min="1" step="1" autocomplete="off"/>
         </div>
     </div>
 
-    <div class="input-row confirm-row">
-        <button type="button" class="confirm" data-action="create-new-monitor">Confirm</button>
-        <button type="button" class="abort" data-action="abort-new-monitor">Abort</button>
+        </section>
+
+        <div class="form-actions">
+            <button type="button" class="button primary" data-action="create-new-monitor"><i class="fas fa-plus"></i><span>Add monitor</span></button>
+            <button type="button" class="button ghost" data-action="abort-new-monitor">Cancel</button>
+        </div>
     </div>
 </div>
 @endsection
@@ -184,7 +207,7 @@
         }
 
         if(hasEmptyMissing) {
-            toastr.error("Be sure to insert every field before confirming!", "Missing Fields")
+            toastr.error("Complete all required fields.", "Missing information")
             return;
         }
 
@@ -209,17 +232,16 @@
             },
             success: function (data) {
                 if(!data.status) {
-                    toastr.error(`Error while saving new monitor (${data.errorMessage})`, "New Monitor Save");
+                    toastr.error(`Could not add monitor (${data.errorMessage})`, "Save failed");
                 }
 
-                toastr.success('New monitor saved successfully!', 'New Monitor Save');
+                toastr.success('Monitor added.');
                 setTimeout(function () {
                     window.location.href = '/'; // Return to the dashboard to see all monitors
                 }, 2000);
             },
-            error: function (error) {
-                console.error(error);
-                toastr.error("Error while saving new monitor", "New Monitor Save");
+            error: function () {
+                toastr.error("Could not add monitor", "Save failed");
             },
             complete: function () {
                 $('button[data-action="create-new-monitor"]').html(_btnHTML);

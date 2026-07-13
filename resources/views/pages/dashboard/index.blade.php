@@ -1,71 +1,150 @@
 @extends('layouts.app')
 
 @section('page-content')
-<div class="card">
-    @if(count($monitors))
-    <div class="input-row columns-3">
-        <div class="card input-cell monitor-status-good-bg">
-            <h1><span class="monitor-status-good">Good: {{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 1; })->count() }}</span></h1>
+<div class="page-container">
+    <header class="page-header">
+        <div>
+            <h1>Dashboard</h1>
         </div>
-        <div class="card input-cell monitor-status-bad-bg">
-            <h1><span class="monitor-status-bad">Bad: {{ $monitors->filter(function ($elem) { return $elem->latest_check_positive == 0; })->count() }}</span></h1>
+        <div class="scan-meta">
+            <span class="meta-label">Last scan</span>
+            <strong>@if($last_refresh) {{ $last_refresh->created_at->format('M j, Y · H:i') }} @else Not run yet @endif</strong>
         </div>
-         <div class="card input-cell monitor-status-warning-bg">
-            <h1><span class="monitor-status-warning">Updates available: {{ $monitors->map(function ($elem) { return $elem->updates_available; })->sum() }}</span></h1>
-        </div>
-    </div>
+    </header>
 
-    <div style="margin-top: 32px; width: 100%; text-align: right;">Last monitor scan: @if(!is_null($last_refresh)) {{ $last_refresh->created_at->format('Y-d-m H:i') }} @else - @endif</div>
+    <section class="summary-grid" aria-label="Monitor summary">
+        <article class="summary-card summary-healthy">
+            <div class="summary-icon"><i class="fas fa-circle-check"></i></div>
+            <div>
+                <span>Healthy</span>
+                <strong>{{ $stats['healthy'] }}</strong>
+            </div>
+        </article>
+        <article class="summary-card summary-unreachable">
+            <div class="summary-icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div>
+                <span>Needs attention</span>
+                <strong>{{ $stats['unreachable'] }}</strong>
+            </div>
+        </article>
+        <article class="summary-card summary-updates">
+            <div class="summary-icon"><i class="fas fa-box-open"></i></div>
+            <div>
+                <span>Updates available</span>
+                <strong>{{ $stats['updates'] }}</strong>
+            </div>
+        </article>
+        <article class="summary-card summary-total">
+            <div class="summary-icon"><i class="fas fa-server"></i></div>
+            <div>
+                <span>Total monitors</span>
+                <strong>{{ $monitors->count() }}</strong>
+            </div>
+        </article>
+    </section>
 
-    <table style="margin-top: 32px;">
-        <thead>
-            <td>Name (Hostname/IP)<hr><small>Username (Auth Method)</small></td>
-            <td>Operating System</td>
-            <td>Updates Available</td>
-            <td>Uptime</td>
-            <td><i class="fa-brands fa-docker color-docker"></i></td>
-            <td>Firewall (UFW)</td>
-            <td>IP Addresses</td>
-            <td>CPU Load</td>
-            <td>Disks Status</td>
-            <td></td>
-        </thead>
-        <tbody>
-            @foreach($monitors as $monitor)
-            <tr>
-                <td {!! $monitor->latest_check_positive == 1 ? 'class="monitor-status-good-bg"' : 'class="monitor-status-bad-bg"' !!}>
-                    <div><span class="monitor-status-{{ $monitor->latest_check_positive == 1 ? 'good' : 'bad' }}">{{ $monitor->name }}</span></div>
-                    <div><small>({{ $monitor->hostname_ip }})</small></div>
-                    <div>{!! $monitor->status() !!}</div>
-                    <br>
-                    <small>
-                        <div>{{ $monitor->username }}</div>
-                        <div><small>{{ $monitor->authMethod() }}</small></div>
-                    </small>
-                </td>
-                <td class="os-line"><div>{!! $monitor->asIcon() !!} {{ $monitor->operating_system_full_version }}</div></td>
-                <td {!! $monitor->thresholdUpdatesAvailableTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->updates_available }}</td>
-                <td {!! $monitor->thresholdUptimeTriggered() ? 'class="monitor-status-warning-bg"' : '' !!}>{{ $monitor->uptime }} days</td>
-                <td>{{ $monitor->docker_daemon_running == 1 ? 'Yes' : 'No' }} @if($monitor->docker_daemon_running == 1) ({{ $monitor->docker_active_containers }}) @endif</td>
-                <td>
-                    {!! $monitor->firewallRules() !!}
-                </td>
-                <td>{!! $monitor->ipAddresses() !!}</td>
-                <td>{{ $monitor->cpu_load }}</td>
-                <td><pre>{{ $monitor->disks_status }}</pre></td>
-                <td>
-                    <div class="monitor-actions">
-                        <button type="button" class="confirm" data-action="refresh-monitor" data-id-monitor="{{ $monitor->id }}">Refresh Monitor</button>
-                        <button type="button" class="delete" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}">Delete Monitor</button>
-                    </div>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    @else
-        <p>There are currently no active monitors. Add one by <span class="brand-color">clicking on the top right button</span>.</p>
-    @endif
+    <section class="panel monitor-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Monitors</h2>
+            </div>
+            <span class="count-badge">{{ $monitors->count() }} {{ Str::plural('monitor', $monitors->count()) }}</span>
+        </div>
+
+        @if($monitors->isNotEmpty())
+            <div class="table-wrap">
+                <table class="monitor-table">
+                    <thead>
+                        <tr>
+                            <th>Monitor</th>
+                            <th>Status</th>
+                            <th>Operating system</th>
+                            <th>Updates</th>
+                            <th>Uptime</th>
+                            <th>Load</th>
+                            <th>Docker</th>
+                            <th class="actions-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($monitors as $monitor)
+                            <tr class="monitor-row">
+                                <td data-label="Monitor">
+                                    <div class="monitor-identity">
+                                        <span class="status-dot {{ $monitor->latest_check_positive ? 'is-healthy' : 'is-unreachable' }}"></span>
+                                        <div>
+                                            <strong>{{ $monitor->name }}</strong>
+                                            <span>{{ $monitor->username }}&#64;{{ $monitor->hostname_ip }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="status-badge {{ $monitor->latest_check_positive ? 'healthy' : 'unreachable' }}">
+                                        {{ $monitor->latest_check_positive ? 'Healthy' : 'Unreachable' }}
+                                    </span>
+                                    <small class="last-good">Last good: {{ $monitor->latest_successful_check ? \Carbon\Carbon::parse($monitor->latest_successful_check)->format('M j, H:i') : '—' }}</small>
+                                </td>
+                                <td data-label="Operating system">
+                                    <div class="os-line">{!! $monitor->asIcon() !!}<span>{{ $monitor->operating_system_full_version ?: 'Unknown' }}</span></div>
+                                </td>
+                                <td data-label="Updates">
+                                    <span class="metric-value {{ $monitor->thresholdUpdatesAvailableTriggered() ? 'is-warning' : '' }}">{{ $monitor->updates_available ?? '—' }}</span>
+                                </td>
+                                <td data-label="Uptime">
+                                    <span class="metric-value {{ $monitor->thresholdUptimeTriggered() ? 'is-warning' : '' }}">{{ $monitor->uptime !== null ? $monitor->uptime.' days' : '—' }}</span>
+                                </td>
+                                <td data-label="CPU load"><span class="metric-value">{{ $monitor->cpu_load ?: '—' }}</span></td>
+                                <td data-label="Docker">
+                                    @if($monitor->docker_daemon_running == 1)
+                                        <span class="docker-status"><i class="fa-brands fa-docker"></i> {{ $monitor->docker_active_containers }} active</span>
+                                    @else
+                                        <span class="muted">Not running</span>
+                                    @endif
+                                </td>
+                                <td data-label="Actions">
+                                    <div class="monitor-actions">
+                                        <button type="button" class="button secondary" data-action="refresh-monitor" data-id-monitor="{{ $monitor->id }}"><i class="fas fa-rotate"></i><span>Refresh</span></button>
+                                        <button type="button" class="icon-button danger" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}" data-monitor-name="{{ $monitor->name }}" title="Delete monitor" aria-label="Delete {{ $monitor->name }}"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="monitor-details-row">
+                                <td colspan="8">
+                                    <details class="monitor-details">
+                                        <summary><span>System details</span><i class="fas fa-chevron-down"></i></summary>
+                                        <div class="details-grid">
+                                            <section>
+                                                <h3>Connection</h3>
+                                                <dl>
+                                                    <div><dt>Authentication</dt><dd>{{ $monitor->authMethod() }}</dd></div>
+                                                    <div><dt>IP addresses</dt><dd>{!! $monitor->ipAddresses() !!}</dd></div>
+                                                </dl>
+                                            </section>
+                                            <section>
+                                                <h3>Firewall</h3>
+                                                <div class="technical-output">{!! $monitor->firewallRules() !!}</div>
+                                            </section>
+                                            <section class="details-wide">
+                                                <h3>Disk usage</h3>
+                                                <pre class="technical-output">{{ $monitor->disks_status ?: 'No disk information available.' }}</pre>
+                                            </section>
+                                        </div>
+                                    </details>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-server"></i></div>
+                <h2>No monitors yet</h2>
+                <p>Add your first server to start tracking health and updates.</p>
+                <a href="{{ route('monitors.new') }}" class="button primary"><i class="fas fa-plus"></i> Add monitor</a>
+            </div>
+        @endif
+    </section>
 </div>
 @endsection
 
@@ -75,73 +154,59 @@
         var idMonitor = $(this).attr('data-id-monitor');
         var button = $(this);
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        button.prop('disabled', true).text('Requesting...');
+        button.prop('disabled', true).find('span').text('Requesting...');
 
         $.ajax({
             method: 'post',
             url: '/monitors/' + idMonitor + '/refresh',
             dataType: 'json',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken
-            },
             success: function (data) {
                 if(!data.status) {
-                    button.prop('disabled', false).text('Refresh Monitor');
-                    toastr.error("Could not request monitor refresh", "Monitor Refresh Error");
+                    button.prop('disabled', false).find('span').text('Refresh');
+                    toastr.error("Could not request monitor refresh", "Refresh failed");
                     return;
                 }
 
-                button.text('Refresh Requested');
-                toastr.success("The monitor refresh was queued successfully.", "Monitor Refresh");
+                button.find('span').text('Requested');
+                toastr.success("Refresh queued.");
             },
-            error: function (error) {
-                console.error(error);
-                button.prop('disabled', false).text('Refresh Monitor');
-                toastr.error("Could not request monitor refresh", "Monitor Refresh Error");
+            error: function () {
+                button.prop('disabled', false).find('span').text('Refresh');
+                toastr.error("Could not request monitor refresh", "Refresh failed");
             }
         });
     });
 
-    $('button[data-action="delete-monitor"]').on('dblclick', function () {
+    $('button[data-action="delete-monitor"]').on('click', function () {
         var idMonitor = $(this).attr('data-id-monitor');
+        var monitorName = $(this).attr('data-monitor-name');
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        if (!window.confirm('Delete "' + monitorName + '"? This action cannot be undone.')) {
+            return;
+        }
 
         $.ajax({
             method: 'post',
             url: '/monitors/delete',
             dataType: 'json',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken
-            },
-            data: {
-                id_monitor: idMonitor
-            },
+            data: { id_monitor: idMonitor },
             success: function (data) {
                 if(!data.status) {
-                    toastr.error("Error while deleting monitor", "Monitor Delete Error");
+                    toastr.error("Could not delete monitor", "Delete failed");
                     return;
                 }
 
-                toastr.success("Monitor deleted successfully!", "Monitor Delete");
-                setTimeout(function () {
-                    window.location.reload();
-                }, 2000);
+                toastr.success("Monitor deleted.");
+                setTimeout(function () { window.location.reload(); }, 2000);
             },
-            error: function (error) {
-                console.error(error);
-                toastr.error("Error while deleting monitor", "Monitor Delete Error");
+            error: function () {
+                toastr.error("Could not delete monitor", "Delete failed");
             }
-        })
-    })
+        });
+    });
 
     $(document).ready(function () {
-        // Auto page reload after 5 minutes for static view content page on monitor dedicated to monitoring
-        setTimeout(function () {
-            window.location.reload();
-        }, 1000 * 60 * 5); // 5 minutes
+        setTimeout(function () { window.location.reload(); }, 1000 * 60 * 5);
     });
 </script>
 @endsection

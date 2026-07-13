@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'KeepUp') }}</title>
 
         <!-- Scripts -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -18,9 +18,9 @@
             <div id="app-navigation">
                 @include('layouts.navigation')
             </div>
-            <div id="app-content">
+            <main id="app-content">
                 @yield('page-content')
-            </div>
+            </main>
             <div id="credits">
                 Made with ❤️ by <a href="https://goldmark.solutions">Goldmark Solutions</a>
             </div>
@@ -56,8 +56,8 @@
                     } else {
                         window.location.reload();
                     }
-                }).catch(error => {
-                    console.error('Logout failed:', error);
+                }).catch(() => {
+                    toastr.error('Unable to log out. Please try again.');
                 });
             });
         </script>
