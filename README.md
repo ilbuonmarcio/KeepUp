@@ -2,6 +2,16 @@
 
 KeepUp is a self-hosted, agentless dashboard for monitoring Linux servers over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
 
+## Screenshots
+
+### Dashboard
+
+![KeepUp dashboard](screenshots/dashboard.png)
+
+### Add a monitor
+
+![KeepUp add monitor form](screenshots/add_monitor.png)
+
 ## Features
 
 ### Server monitoring
