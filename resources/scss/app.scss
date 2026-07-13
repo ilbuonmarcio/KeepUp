@@ -333,6 +333,42 @@ button:disabled,
     padding: 20px 22px;
 }
 
+.monitor-panel-heading {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    min-width: 0;
+}
+
+.label-filters {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.label-filter {
+    background: color-mix(in srgb, var(--label-color) 10%, white);
+    border: 1px solid color-mix(in srgb, var(--label-color) 42%, white);
+    color: var(--label-color);
+    font-size: 10px;
+    gap: 5px;
+    min-height: 30px;
+    padding: 5px 9px;
+}
+
+.label-filter:hover {
+    background: color-mix(in srgb, var(--label-color) 18%, white);
+}
+
+.label-filter.is-active {
+    background: var(--label-color);
+    border-color: var(--label-color);
+    color: var(--label-text-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--label-color) 18%, transparent);
+}
+
 .count-badge {
     background: var(--surface-muted);
     border: 1px solid var(--border);
@@ -430,6 +466,73 @@ table {
     display: flex;
     gap: 8px;
     margin-top: 2px;
+}
+
+.monitor-labels {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 7px;
+}
+
+.monitor-label {
+    align-items: center;
+    background: color-mix(in srgb, var(--label-color) 10%, white);
+    border: 1px solid color-mix(in srgb, var(--label-color) 42%, white);
+    border-radius: 999px;
+    color: var(--label-color) !important;
+    display: inline-flex !important;
+    font-size: 9px !important;
+    font-weight: 600;
+    gap: 3px;
+    line-height: 1;
+    margin: 0 !important;
+    min-height: 23px;
+    padding: 4px 5px 4px 8px;
+}
+
+.monitor-label .label-name {
+    color: inherit !important;
+    display: inline;
+    font-size: inherit;
+    margin: 0;
+}
+
+.monitor-label button {
+    background: color-mix(in srgb, var(--label-color) 10%, transparent);
+    border-radius: 50%;
+    color: inherit;
+    font-size: 8px;
+    height: 16px;
+    min-height: 16px;
+    padding: 0;
+    width: 16px;
+}
+
+.monitor-label button:hover {
+    background: color-mix(in srgb, var(--label-color) 20%, transparent);
+    transform: none;
+}
+
+.add-label-button {
+    background: var(--surface-muted);
+    border: 1px dashed #c8ccd6;
+    border-radius: 999px;
+    color: var(--text-muted);
+    gap: 2px;
+    height: 23px;
+    min-height: 23px;
+    padding: 0 7px;
+}
+
+.add-label-button .fa-tag { font-size: 9px; }
+.add-label-button .fa-plus { font-size: 7px; }
+
+.add-label-button:hover {
+    background: var(--brand-soft);
+    border-color: var(--brand);
+    color: var(--brand);
 }
 
 .monitor-address {
@@ -584,6 +687,83 @@ table {
 
 .monitor-details-row[hidden] {
     display: none !important;
+}
+
+.filtered-empty-row[hidden] {
+    display: none !important;
+}
+
+.filtered-empty-row td {
+    border-top: 1px solid var(--border);
+    padding: 34px 20px;
+}
+
+.filtered-empty-state {
+    align-items: center;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.label-dialog {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 24px 70px rgba(28, 31, 44, 0.24);
+    color: var(--text);
+    max-width: 430px;
+    padding: 0;
+    width: calc(100% - 28px);
+}
+
+.label-dialog::backdrop {
+    background: rgba(31, 34, 47, 0.42);
+    backdrop-filter: blur(2px);
+}
+
+.label-dialog form {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 44px 1fr;
+    padding: 24px;
+}
+
+.label-dialog-icon {
+    align-items: center;
+    background: var(--brand-soft);
+    border-radius: 11px;
+    color: var(--brand);
+    display: flex;
+    font-size: 16px;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
+}
+
+.label-dialog p {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.label-dialog label,
+.label-dialog input,
+.label-dialog-actions {
+    grid-column: 1 / -1;
+}
+
+.label-dialog label {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: -10px;
+}
+
+.label-dialog-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 2px;
 }
 
 .details-grid {
@@ -898,6 +1078,15 @@ textarea::placeholder {
         padding: 18px;
     }
 
+    .monitor-panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .label-filters {
+        max-width: 100%;
+    }
+
     .table-wrap {
         overflow: visible;
         padding: 0 12px 12px;
@@ -937,6 +1126,12 @@ textarea::placeholder {
         border-top: 0;
         display: block;
         text-align: left;
+    }
+
+    .filtered-empty-row,
+    .filtered-empty-row td {
+        display: block;
+        width: 100%;
     }
 
     .monitor-table .monitor-row td:not(:first-child)::before {

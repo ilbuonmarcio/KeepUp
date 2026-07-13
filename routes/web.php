@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitorController;
+use App\Http\Controllers\MonitorLabelController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('{monitor}', [MonitorController::class, 'update'])->name('monitors.update');
         Route::post('delete', [MonitorController::class, 'delete'])->name('monitors.delete');
         Route::post('{monitor}/refresh', [MonitorController::class, 'refresh'])->name('monitors.refresh');
+        Route::post('{monitor}/labels', [MonitorLabelController::class, 'store'])->name('monitors.labels.store');
+        Route::delete('{monitor}/labels/{label}', [MonitorLabelController::class, 'destroy'])->name('monitors.labels.destroy');
         Route::get('run-ondemand', [MonitorController::class, 'runMonitorsOnDemand'])->name('monitors.run-ondemand');
     });
 

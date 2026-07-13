@@ -45,10 +45,23 @@
 
     <section class="panel monitor-panel">
         <div class="panel-header">
-            <div>
+            <div class="monitor-panel-heading">
                 <h2>Monitors</h2>
+                @if($labels->isNotEmpty())
+                    <div class="label-filters" aria-label="Filter monitors by label">
+                        @foreach($labels as $label)
+                            <button
+                                type="button"
+                                class="label-filter"
+                                data-label-filter="{{ $label->id }}"
+                                aria-pressed="false"
+                                style="--label-color: {{ $label->color() }}; --label-text-color: {{ $label->textColor() }}"
+                            ><i class="fas fa-tag"></i>{{ $label->name }}</button>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            <span class="count-badge">{{ $monitors->count() }} {{ Str::plural('monitor', $monitors->count()) }}</span>
+            <span class="count-badge" data-monitor-count data-total="{{ $monitors->count() }}">{{ $monitors->count() }} {{ Str::plural('monitor', $monitors->count()) }}</span>
         </div>
 
         @if($monitors->isNotEmpty())
@@ -68,7 +81,7 @@
                     </thead>
                     <tbody>
                         @foreach($monitors as $monitor)
-                            <tr class="monitor-row">
+                            <tr class="monitor-row" data-label-ids="{{ $monitor->labels->pluck('id')->implode(',') }}">
                                 <td data-label="Monitor">
                                     <div class="monitor-identity">
                                         <button
@@ -101,6 +114,31 @@
                                                         title="{{ $monitor->firewallIsActive() ? 'Firewall active' : 'Firewall inactive or unavailable' }}"
                                                     ><i class="fas fa-shield-halved"></i></span>
                                                 </span>
+                                            </div>
+                                            <div class="monitor-labels" aria-label="Labels for {{ $monitor->name }}">
+                                                @foreach($monitor->labels as $label)
+                                                    <span class="monitor-label" style="--label-color: {{ $label->color() }}; --label-text-color: {{ $label->textColor() }}">
+                                                        <span class="label-name">{{ $label->name }}</span>
+                                                        <button
+                                                            type="button"
+                                                            data-action="remove-monitor-label"
+                                                            data-id-monitor="{{ $monitor->id }}"
+                                                            data-id-label="{{ $label->id }}"
+                                                            data-label-name="{{ $label->name }}"
+                                                            title="Remove {{ $label->name }} label"
+                                                            aria-label="Remove {{ $label->name }} label from {{ $monitor->name }}"
+                                                        ><i class="fas fa-xmark"></i></button>
+                                                    </span>
+                                                @endforeach
+                                                <button
+                                                    type="button"
+                                                    class="add-label-button"
+                                                    data-action="add-monitor-label"
+                                                    data-id-monitor="{{ $monitor->id }}"
+                                                    data-monitor-name="{{ $monitor->name }}"
+                                                    title="Add label"
+                                                    aria-label="Add label to {{ $monitor->name }}"
+                                                ><i class="fas fa-tag"></i><i class="fas fa-plus"></i></button>
                                             </div>
                                         </div>
                                     </div>
@@ -158,6 +196,11 @@
                                 </td>
                             </tr>
                         @endforeach
+                        <tr class="filtered-empty-row" hidden>
+                            <td colspan="8">
+                                <div class="filtered-empty-state"><i class="fas fa-filter-circle-xmark"></i>No monitors match the selected labels.</div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -171,10 +214,70 @@
         @endif
     </section>
 </div>
+
+<dialog class="label-dialog" id="label-dialog">
+    <form id="label-form">
+        <div class="label-dialog-icon"><i class="fas fa-tag"></i></div>
+        <div>
+            <h2>Add label</h2>
+            <p>Add a label to <strong data-label-monitor-name></strong>.</p>
+        </div>
+        <label for="label-name">Label name</label>
+        <input type="text" id="label-name" name="label" maxlength="50" placeholder="For example: Production" autocomplete="off" required>
+        <div class="label-dialog-actions">
+            <button type="button" class="button ghost" data-action="cancel-label">Cancel</button>
+            <button type="submit" class="button primary"><i class="fas fa-plus"></i>Add label</button>
+        </div>
+    </form>
+</dialog>
 @endsection
 
 @section('page-js')
 <script>
+    var selectedLabelFilters = new Set();
+
+    function applyLabelFilters() {
+        var visibleCount = 0;
+
+        $('.monitor-row').each(function () {
+            var row = $(this);
+            var rowLabelIds = (row.attr('data-label-ids') || '').split(',').filter(Boolean);
+            var isVisible = selectedLabelFilters.size === 0
+                || rowLabelIds.some(function (labelId) { return selectedLabelFilters.has(labelId); });
+            var detailsRow = $('#monitor-details-' + row.find('[data-id-monitor]').first().attr('data-id-monitor'));
+
+            row.toggle(isVisible);
+            detailsRow.toggle(isVisible && !detailsRow.prop('hidden'));
+
+            if (isVisible) {
+                visibleCount++;
+            }
+        });
+
+        var totalCount = Number($('[data-monitor-count]').attr('data-total'));
+        var countText = selectedLabelFilters.size === 0
+            ? totalCount + ' ' + (totalCount === 1 ? 'monitor' : 'monitors')
+            : visibleCount + ' of ' + totalCount + ' monitors';
+
+        $('[data-monitor-count]').text(countText);
+        $('.filtered-empty-row').prop('hidden', visibleCount !== 0);
+    }
+
+    $('button[data-label-filter]').on('click', function () {
+        var button = $(this);
+        var labelId = button.attr('data-label-filter');
+
+        if (selectedLabelFilters.has(labelId)) {
+            selectedLabelFilters.delete(labelId);
+            button.removeClass('is-active').attr('aria-pressed', 'false');
+        } else {
+            selectedLabelFilters.add(labelId);
+            button.addClass('is-active').attr('aria-pressed', 'true');
+        }
+
+        applyLabelFilters();
+    });
+
     $('button[data-action="toggle-monitor-details"]').on('click', function () {
         var button = $(this);
         var detailsRow = $('#monitor-details-' + button.attr('data-id-monitor'));
@@ -210,6 +313,78 @@
             error: function () {
                 button.prop('disabled', false).find('span').text('Refresh');
                 toastr.error("Could not request monitor refresh", "Refresh failed");
+            }
+        });
+    });
+
+    $('button[data-action="add-monitor-label"]').on('click', function () {
+        var button = $(this);
+        var dialog = document.getElementById('label-dialog');
+
+        $('#label-form').attr('data-id-monitor', button.attr('data-id-monitor'));
+        $('[data-label-monitor-name]').text(button.attr('data-monitor-name'));
+        $('#label-name').val('');
+        dialog.showModal();
+        setTimeout(function () { $('#label-name').trigger('focus'); }, 0);
+    });
+
+    $('button[data-action="cancel-label"]').on('click', function () {
+        document.getElementById('label-dialog').close();
+    });
+
+    $('#label-dialog').on('click', function (event) {
+        if (event.target === this) {
+            this.close();
+        }
+    });
+
+    $('#label-form').on('submit', function (event) {
+        event.preventDefault();
+
+        var form = $(this);
+        var labelName = $('#label-name').val().trim();
+        var submitButton = form.find('button[type="submit"]');
+
+        if (labelName.length === 0) {
+            $('#label-name').trigger('focus');
+            return;
+        }
+
+        submitButton.prop('disabled', true);
+
+        $.ajax({
+            method: 'post',
+            url: '/monitors/' + form.attr('data-id-monitor') + '/labels',
+            dataType: 'json',
+            data: { label: labelName },
+            success: function () {
+                toastr.success('Label added.');
+                window.location.reload();
+            },
+            error: function (xhr) {
+                var message = xhr.responseJSON?.errors?.label?.[0] || 'Could not add label.';
+                toastr.error(message, 'Label not added');
+                submitButton.prop('disabled', false);
+            }
+        });
+    });
+
+    $('button[data-action="remove-monitor-label"]').on('click', function () {
+        var button = $(this);
+
+        button.prop('disabled', true);
+
+        $.ajax({
+            method: 'delete',
+            url: '/monitors/' + button.attr('data-id-monitor') + '/labels/' + button.attr('data-id-label'),
+            dataType: 'json',
+            success: function () {
+                toastr.success('Label removed.');
+                window.location.reload();
+            },
+            error: function () {
+                toastr.error('Could not remove label.', 'Label not removed');
+                button.prop('disabled', false);
             }
         });
     });

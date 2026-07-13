@@ -14,6 +14,7 @@ Your personal, *agentless* assistant for keeping your Linux systems monitored an
     - Disk usage
     - CPU usage
     - Docker system support and container list
+- Organize monitors with multiple color-coded labels and quick dashboard filters.
 
 ## Operating Systems supported
 
@@ -39,7 +40,7 @@ Ideas worth mentioning, that would be good to implement:
 
 - [ ] Add docker-compose.yml official file for easier deployment of the whole stack
 - [ ] Add LDAP/SSO login support/integration
-- [ ] Add labels (maybe even multiple) support for monitored servers
+- [x] Add multiple labels and quick label filters for monitored servers
 - [x] Reuse a securely stored private key across multiple monitored machines
 - [ ] Add Windows clients/servers support
 - [x] Add Proxmox PVE support
