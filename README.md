@@ -27,6 +27,72 @@ For now, we integrated with:
 
 Feel free to make a PR to integrate with other operating systems, like SUSE and RHEL!
 
+## Docker deployment
+
+The included Docker Compose stack runs KeepUp with MySQL 8.4 LTS, a queue worker, the scheduler, persistent SSH-key storage, health checks and automatic database migrations. You need Docker Engine with the Compose v2 plugin, or Docker Desktop.
+
+1. From the project directory, copy the container environment template:
+
+    ```bash
+    cp .env.docker.example .env.docker
+    ```
+
+2. Open `.env.docker` and configure the deployment:
+
+    - Set `APP_URL` to the URL used to access KeepUp.
+    - Replace `DB_PASSWORD` and `MYSQL_PASSWORD` with the same strong password.
+    - Set `MYSQL_ROOT_PASSWORD` to a different strong password.
+
+3. Build the application image and generate an application key:
+
+    ```bash
+    docker compose build
+    docker compose run --rm --no-deps app php artisan key:generate --show
+    ```
+
+4. Paste the generated value, including its `base64:` prefix, into `APP_KEY` in `.env.docker`.
+
+5. Start the stack and wait for its services to become healthy:
+
+    ```bash
+    docker compose up -d --wait
+    ```
+
+6. Create the first login account using the secure interactive command:
+
+    ```bash
+    docker compose exec app php artisan app:create-user
+    ```
+
+7. Open `http://localhost:8000` and sign in with the account you created. You can confirm that every service is running with:
+
+    ```bash
+    docker compose ps
+    ```
+
+### Custom port
+
+KeepUp is published on port `8000` by default. To use another port, update `APP_URL` accordingly and set `KEEPUP_PORT` when starting the stack:
+
+```bash
+KEEPUP_PORT=8080 docker compose up -d --wait
+```
+
+### Managing the stack
+
+```bash
+# Follow logs from every service
+docker compose logs -f
+
+# Rebuild and apply a project update
+docker compose up -d --build --wait
+
+# Stop the stack without deleting its data
+docker compose down
+```
+
+The database and encrypted SSH keys are stored in named Docker volumes and survive a normal `docker compose down`. Running `docker compose down --volumes` permanently deletes those volumes, including the database and stored SSH keys.
+
 ## Screenshots
 
 ![Dashboard view](/screenshots/dashboard.png)
@@ -38,7 +104,7 @@ For now, everything needed from my side is currently implemented, but you're ver
 
 Ideas worth mentioning, that would be good to implement:
 
-- [ ] Add docker-compose.yml official file for easier deployment of the whole stack
+- [x] Add an official Docker Compose stack for easier deployment
 - [ ] Add LDAP/SSO login support/integration
 - [x] Add multiple labels and quick label filters for monitored servers
 - [x] Reuse a securely stored private key across multiple monitored machines

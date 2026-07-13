@@ -1,0 +1,59 @@
+x-keepup-service: &keepup-service
+  image: keepup:local
+  build:
+    context: .
+    target: runtime
+  env_file:
+    - .env.docker
+  volumes:
+    - keepup_storage:/var/www/html/storage
+  restart: unless-stopped
+  init: true
+
+services:
+  database:
+    image: mysql:8.4
+    env_file:
+      - .env.docker
+    volumes:
+      - keepup_database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  app:
+    <<: *keepup-service
+    ports:
+      - "${KEEPUP_PORT:-8000}:80"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  queue:
+    <<: *keepup-service
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=180
+    stop_grace_period: 30s
+    depends_on:
+      app:
+        condition: service_healthy
+
+  scheduler:
+    <<: *keepup-service
+    command: php artisan schedule:work
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  keepup_database:
+  keepup_storage:
