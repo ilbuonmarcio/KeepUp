@@ -4,88 +4,96 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Monitor extends Model
 {
     public $table = 'monitors';
+
     public $timestamps = true;
 
-    public function authMethod() {
-        switch($this->auth_method) {
+    protected ?string $temporarySshKey = null;
+
+    public function authMethod()
+    {
+        switch ($this->auth_method) {
             case 'password': return 'Password';
             case 'ssh_private_key': return 'SSH Private Key';
             default: return '-';
         }
     }
 
-    public function ipAddresses() {
-        if(is_null($this->ip_addresses)) {
+    public function ipAddresses()
+    {
+        if (is_null($this->ip_addresses)) {
             return '-';
         } else {
             $str = '';
             $ips = collect(json_decode($this->ip_addresses, JSON_OBJECT_AS_ARRAY));
-            foreach($ips as $ip) {
+            foreach ($ips as $ip) {
                 $isPublicIp = filter_var(
                     explode('/', $ip)[0],
                     FILTER_VALIDATE_IP,
                     FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
                 ) !== false;
 
-                $str .= '<div class="' . ($isPublicIp ? 'is-public-ip' : '') . '" ' . ($isPublicIp ? 'title="Public IP"' : '') . '>' . $ip . '</div>';
+                $str .= '<div class="'.($isPublicIp ? 'is-public-ip' : '').'" '.($isPublicIp ? 'title="Public IP"' : '').'>'.$ip.'</div>';
             }
+
             return $str;
         }
     }
 
-    public function firewallRules() {
-        if(is_null($this->firewall_rules)) {
+    public function firewallRules()
+    {
+        if (is_null($this->firewall_rules)) {
             return '<span class="notify-label"><i class="fas fa-warning"></i> UFW Not Installed</span>';
         } else {
             $str = '';
             $rows = collect(json_decode($this->firewall_rules, JSON_OBJECT_AS_ARRAY));
 
-            if(count($rows) == 0) {
+            if (count($rows) == 0) {
                 return '<span class="notify-label"><i class="fas fa-warning"></i> UFW Not Installed</span>';
             }
-            if($rows->first() == "Status: inactive") {
+            if ($rows->first() == 'Status: inactive') {
                 return '<span class="warning-label"><i class="fas fa-warning"></i> UFW inactive</span>';
             }
 
-            foreach($rows as $row) {
-                if(strlen($row) == 0) {
+            foreach ($rows as $row) {
+                if (strlen($row) == 0) {
                     $str .= '<br>';
                 }
-                $str .= '<pre>' . $row . '</pre>';
+                $str .= '<pre>'.$row.'</pre>';
             }
+
             return $str;
         }
     }
 
-    public function status() {
-        if($this->latest_check_positive) {
-            return '<div style="margin-top: 12px; !important; font-size: 12px;">Last good check:<br>' . Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i') . '</div>';
+    public function status()
+    {
+        if ($this->latest_check_positive) {
+            return '<div style="margin-top: 12px; !important; font-size: 12px;">Last good check:<br>'.Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i').'</div>';
         } else {
-            return '<div style="margin-top: 12px; !important; font-size: 12px;">Last good check:<br>' . Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i') . '</div>';
+            return '<div style="margin-top: 12px; !important; font-size: 12px;">Last good check:<br>'.Carbon::parse($this->latest_successful_check)->format('Y-m-d H:i').'</div>';
         }
     }
 
-    public function sshPrivateKeyFullPath() {
-        return storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key);
-    }
-
-    public function thresholdUptimeTriggered() {
+    public function thresholdUptimeTriggered()
+    {
         return $this->uptime >= $this->threshold_uptime;
     }
 
-    public function thresholdUpdatesAvailableTriggered() {
+    public function thresholdUpdatesAvailableTriggered()
+    {
         return $this->updates_available >= $this->threshold_updates_available;
     }
 
-    public function version() {
-        $version = new MonitorVersion();
+    public function version()
+    {
+        $version = new MonitorVersion;
         $version->monitor_id = $this->id;
         $version->uptime = $this->uptime;
         $version->updates_available = $this->updates_available;
@@ -93,38 +101,49 @@ class Monitor extends Model
         $version->save();
     }
 
-    public function sshKeyDecrypt() {
+    public function sshKeyDecrypt(): string
+    {
         $this->sshKeyDecryptFlush();
 
-        $encrypted = file_get_contents($this->sshPrivateKeyFullPath());
+        $encrypted = Storage::disk('private_keys')->get($this->ssh_private_key);
         $decrypted = Crypt::decryptString($encrypted);
 
-        // Save temporarily
-        Storage::disk('private_keys')->put($this->ssh_private_key . '.decrypt', $decrypted);
-        chmod(storage_path('app/private/ssh_private_keys/' . $this->ssh_private_key . '.decrypt'), 0600);
+        $this->temporarySshKey = '.keepup-'.Str::random(40).'.key';
+        Storage::disk('private_keys')->put($this->temporarySshKey, $decrypted);
+        $path = Storage::disk('private_keys')->path($this->temporarySshKey);
+        chmod($path, 0600);
+
+        return $path;
     }
 
-    public function sshKeyDecryptFlush() {
-        Storage::disk('private_keys')->delete($this->ssh_private_key . '.decrypt');
+    public function sshKeyDecryptFlush(): void
+    {
+        if ($this->temporarySshKey === null) {
+            return;
+        }
+
+        Storage::disk('private_keys')->delete($this->temporarySshKey);
+        $this->temporarySshKey = null;
     }
 
-    public function asIcon() {
-        switch($this->operating_system) {
-            case 'Debian': {
+    public function asIcon()
+    {
+        switch ($this->operating_system) {
+            case 'Debian':
                 return '<i class="fa-brands fa-debian color-debian"></i>';
-            }
-            case 'Ubuntu': {
+
+            case 'Ubuntu':
                 return '<i class="fa-brands fa-ubuntu color-ubuntu"></i>';
-            }
-            case 'Arch Linux': {
+
+            case 'Arch Linux':
                 return '<img src="/images/os-icons/archlinux.svg"/ style="height:1em; vertical-align:-0.1em;">';
-            }
-            case 'Proxmox VE': {
+
+            case 'Proxmox VE':
                 return '<img src="/images/os-icons/proxmox.svg"/ style="height:1em; vertical-align:-0.1em;">';
-            }
-            default: {
+
+            default:
                 return '';
-            }
+
         }
     }
 }

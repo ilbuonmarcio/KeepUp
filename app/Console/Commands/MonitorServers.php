@@ -83,9 +83,7 @@ class MonitorServers extends Command
                 if ($system['auth_method'] == 'password') {
                     $process = $process->usePassword(Crypt::decryptString($system['password']));
                 } elseif ($system['auth_method'] == 'ssh_private_key') {
-                    // Decrypt ssh private key on the fly
-                    $system->sshKeyDecrypt();
-                    $process = $process->usePrivateKey($system->sshPrivateKeyFullPath().'.decrypt')->disablePasswordAuthentication();
+                    $process = $process->usePrivateKey($system->sshKeyDecrypt())->disablePasswordAuthentication();
                 } else {
                     echo 'System '.$system['hostname_ip']." has no auth method supported, skipping...\n";
 
@@ -250,9 +248,9 @@ class MonitorServers extends Command
                 $system->docker_daemon_running = null;
                 $system->docker_active_containers = null;
                 $system->save();
+            } finally {
+                $system->sshKeyDecryptFlush();
             }
-
-            $system->sshKeyDecryptFlush();
         }
 
         // Add refresh status update

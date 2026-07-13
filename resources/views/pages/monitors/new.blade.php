@@ -34,14 +34,27 @@
     <div class="input-row columns-1">
         <div class="input-cell">
             <label for="monitor-password">Password</label>
-            <input type="text" id="monitor-password" name="monitor-password" value="" autocomplete="off" placeholder="Insert the remote machine's username related password for remote login"/>
+            <input type="password" id="monitor-password" name="monitor-password" value="" autocomplete="new-password" placeholder="Insert the remote machine's username related password for remote login"/>
+        </div>
+    </div>
+
+    <div class="input-row columns-1">
+        <div class="input-cell">
+            <label for="monitor-ssh-key-source">SSH Key</label>
+            <select id="monitor-ssh-key-source" name="monitor-ssh-key-source" autocomplete="off">
+                <option value="upload" selected>Upload a new private key</option>
+                @foreach($sshKeySources as $keySource)
+                    <option value="{{ $keySource->id }}">Reuse key from {{ $keySource->name }} ({{ $keySource->username }}&#64;{{ $keySource->hostname_ip }})</option>
+                @endforeach
+            </select>
         </div>
     </div>
 
     <div class="input-row columns-1">
         <div class="input-cell">
             <label for="monitor-ssh-private-key">SSH Private Key</label>
-            <input type="file" id="monitor-ssh-private-key" name="monitor-ssh-private-key" value="" autocomplete="off" placeholder="Copy-paste your remote machine's SSH private key for remote login for this username"/>
+            <input type="file" id="monitor-ssh-private-key" name="monitor-ssh-private-key" autocomplete="off"/>
+            <small>The key is encrypted before it is stored. KeepUp only decrypts it temporarily while connecting.</small>
         </div>
     </div>
 
@@ -69,24 +82,34 @@
 @section('page-js')
 <script>
     $(document).ready(function () {
+        $('#monitor-ssh-key-source').parent().parent().hide();
         $('#monitor-ssh-private-key').parent().parent().hide();
     });
+
+    function updateSshKeyInput() {
+        var isUpload = $('#monitor-ssh-key-source').val() === 'upload';
+        $('#monitor-ssh-private-key').parent().parent().toggle(isUpload);
+    }
 
     $('#monitor-auth-method').on('change', function () {
         var selectedAuthMethod = $(this).val();
 
         switch(selectedAuthMethod) {
             case 'password': {
+                $('#monitor-ssh-key-source').parent().parent().hide();
                 $('#monitor-ssh-private-key').parent().parent().hide();
                 $('#monitor-password').parent().parent().show();
                 break;
             }
             case 'ssh_private_key': {
                 $('#monitor-password').parent().parent().hide();
-                $('#monitor-ssh-private-key').parent().parent().show();
+                $('#monitor-ssh-key-source').parent().parent().show();
+                updateSshKeyInput();
             }
         }
     });
+
+    $('#monitor-ssh-key-source').on('change', updateSshKeyInput);
 
     $('button[data-action="abort-new-monitor"]').on('click', function () {
         window.location.href = '/';
@@ -99,10 +122,12 @@
         $('#monitor-username').removeClass('input-field-missing-insertion');
         $('#monitor-auth-method').removeClass('input-field-missing-insertion');
         $('#monitor-password').removeClass('input-field-missing-insertion');
+        $('#monitor-ssh-key-source').removeClass('input-field-missing-insertion');
         $('#monitor-ssh-private-key').removeClass('input-field-missing-insertion');
         $('#monitor-threshold-uptime').removeClass('input-field-missing-insertion');
         $('#monitor-threshold-updates-available').removeClass('input-field-missing-insertion');
 
+        var sshKeySource = $('#monitor-ssh-key-source').val();
         var payload = {
             name: $('#monitor-name').val().trim(),
             hostname_ip: $('#monitor-hostname-ip').val().trim(),
@@ -110,6 +135,7 @@
             auth_method: $('#monitor-auth-method').val().trim(),
             password: $('#monitor-password').val().trim(),
             ssh_private_key: $('#monitor-ssh-private-key')[0].files[0],
+            existing_ssh_key_monitor_id: sshKeySource === 'upload' ? '' : sshKeySource,
             threshold_uptime: $('#monitor-threshold-uptime').val().trim(),
             threshold_updates_available: $('#monitor-threshold-updates-available').val().trim()
         };
@@ -142,7 +168,7 @@
             hasEmptyMissing = true;
         }
 
-        if(payload.auth_method == 'ssh_private_key' && payload.ssh_private_key === undefined) {
+        if(payload.auth_method == 'ssh_private_key' && sshKeySource === 'upload' && payload.ssh_private_key === undefined) {
             $('#monitor-ssh-private-key').addClass('input-field-missing-insertion');
             hasEmptyMissing = true;
         }
@@ -165,7 +191,9 @@
         // Create temporary form data so that I can upload the file if needed
         var formData = new FormData();
         for(var key of Object.keys(payload)) {
-            formData.append(key, payload[key]);
+            if(payload[key] !== undefined && payload[key] !== null) {
+                formData.append(key, payload[key]);
+            }
         }
 
         // All good, save to the system!
