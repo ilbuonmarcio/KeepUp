@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 $navHeight: 120px;
@@ -8,6 +10,13 @@ $black: rgb(55, 55, 55);
 $orange: rgb(239, 189, 39);
 
 html, body {
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+
+    height: 100vh;
+    width: 100vw;
+
     * {
         padding: 0;
         margin: 0;
@@ -15,13 +24,6 @@ html, body {
         text-rendering: optimizeLegibility;
         color: $black;
     }
-
-    font-family: "Poppins", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-
-    height: 100vh;
-    width: 100vw;
 }
 
 a {
@@ -38,21 +40,21 @@ a {
     color: rgb(37, 171, 37);
 }
 .monitor-status-good-bg {
-    background-color: lighten(rgb(37, 171, 37), 40%) !important;
+    background-color: color.adjust(rgb(37, 171, 37), $lightness: 40%) !important;
 }
 
 .monitor-status-bad {
     color: rgb(203, 54, 54);
 }
 .monitor-status-bad-bg {
-    background-color: lighten(rgb(203, 54, 54), 37%) !important;
+    background-color: color.adjust(rgb(203, 54, 54), $lightness: 37%) !important;
 }
 
 .monitor-status-warning {
     color: rgb(213, 152, 47);
 }
 .monitor-status-warning-bg {
-    background-color: lighten(rgb(213, 152, 47), 33%) !important;
+    background-color: color.adjust(rgb(213, 152, 47), $lightness: 33%) !important;
 }
 
 h1 { font-size: 30px; }
@@ -75,6 +77,8 @@ p {
 }
 
 button, a.button {
+    user-select: none;
+
     padding-left: 12px;
     padding-right: 12px;
     padding-top: 8px;
@@ -94,7 +98,7 @@ button, a.button {
         }
     }
     &.abort {
-        background-color: darken($white, 10%);
+        background-color: color.adjust($white, $lightness: -10%);
         color: $black;
     }
     &.delete {
@@ -105,8 +109,6 @@ button, a.button {
     &:hover {
         cursor: pointer;
     }
-
-    user-select: none;
 }
 
 input, textarea, select {
