@@ -131,6 +131,7 @@
                                 <td data-label="Actions">
                                     <div class="monitor-actions">
                                         <button type="button" class="button secondary" data-action="refresh-monitor" data-id-monitor="{{ $monitor->id }}"><i class="fas fa-rotate"></i><span>Refresh</span></button>
+                                        <a href="{{ route('monitors.edit', $monitor) }}" class="button icon-button" title="Edit monitor" aria-label="Edit {{ $monitor->name }}"><i class="fas fa-pen"></i></a>
                                         <button type="button" class="icon-button danger" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}" data-monitor-name="{{ $monitor->name }}" title="Delete monitor" aria-label="Delete {{ $monitor->name }}"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>

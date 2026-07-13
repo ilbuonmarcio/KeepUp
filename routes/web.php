@@ -11,6 +11,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('/monitors')->group(function () {
         Route::get('new', [MonitorController::class, 'new'])->name('monitors.new');
         Route::post('new', [MonitorController::class, 'create'])->name('monitors.create');
+        Route::get('{monitor}/edit', [MonitorController::class, 'edit'])->name('monitors.edit');
+        Route::put('{monitor}', [MonitorController::class, 'update'])->name('monitors.update');
         Route::post('delete', [MonitorController::class, 'delete'])->name('monitors.delete');
         Route::post('{monitor}/refresh', [MonitorController::class, 'refresh'])->name('monitors.refresh');
         Route::get('run-ondemand', [MonitorController::class, 'runMonitorsOnDemand'])->name('monitors.run-ondemand');

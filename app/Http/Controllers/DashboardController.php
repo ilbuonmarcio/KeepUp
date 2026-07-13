@@ -9,7 +9,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $monitors = Monitor::get();
+        $monitors = Monitor::query()
+            ->orderByRaw('LOWER(name) ASC')
+            ->orderBy('name')
+            ->get();
 
         return view('pages.dashboard.index')->with([
             'monitors' => $monitors,
