@@ -6,7 +6,7 @@ Your personal, *agentless* assistant for keeping your Linux systems monitored an
 
 ## Features
 
-- Add, remove and monitor systems remotely via SSH password-based authentication and private-key-based authentication, and get automatically:
+- Add, edit, remove and monitor systems remotely via SSH password-based authentication and private-key-based authentication. Passwords and private keys are encrypted at rest, and stored private keys can be reused across multiple monitors. KeepUp automatically collects:
     - Operating System
     - Uptime
     - Updates available
@@ -14,7 +14,6 @@ Your personal, *agentless* assistant for keeping your Linux systems monitored an
     - Disk usage
     - CPU usage
     - Docker system support and container list
-    - Weekly emails about monitor status
 
 ## Operating Systems supported
 
@@ -41,9 +40,8 @@ Ideas worth mentioning, that would be good to implement:
 - [ ] Add docker-compose.yml official file for easier deployment of the whole stack
 - [ ] Add LDAP/SSO login support/integration
 - [ ] Add labels (maybe even multiple) support for monitored servers
-- [ ] Add Credentials section to use a single private key file for multiple machines
+- [x] Reuse a securely stored private key across multiple monitored machines
 - [ ] Add Windows clients/servers support
-- [ ] Update mail view template with newly integrated data
 - [x] Add Proxmox PVE support
 - [x] Operating system specific version, so we can check if systems are in EOL or not
 - [x] Docker service installed, and number of containers active (number should be enough) 
@@ -54,7 +52,6 @@ Ideas worth mentioning, that would be good to implement:
 - [x] Add cumulative stats for updates available
 - [x] Add password encryption
 - [x] Add ssh private key encryption
-- [x] Send reports via e-mail on a weekly basis
 - [x] Get cumulative volatile memory status, disk(s) space left and system load
 - [x] Add manual refresh button on dashboard + last refresh + auto refresh page on 5 minutes on dashboard
 - [x] Add a manual refresh request button for each monitor in the main table
