@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Monitor;
 use App\Models\MonitorLastRefresh;
+use App\Services\TelegramMonitorNotifier;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -33,7 +34,7 @@ class MonitorServers extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(TelegramMonitorNotifier $telegramNotifier)
     {
         $systems = Monitor::query()
             ->when($this->option('monitor') !== null, fn ($query) => $query->whereKey($this->option('monitor')))
@@ -227,6 +228,8 @@ class MonitorServers extends Command
                 $system->check_time = $init->diffInMilliseconds(Carbon::now());
                 $system->save();
 
+                $telegramNotifier->notify($system);
+
                 // Create version of the last saved monitor status, if connected successfully
                 if ($result['connected_successfully']) {
                     $system->version();
@@ -248,6 +251,8 @@ class MonitorServers extends Command
                 $system->docker_daemon_running = null;
                 $system->docker_active_containers = null;
                 $system->save();
+
+                $telegramNotifier->notify($system);
             } finally {
                 $system->sshKeyDecryptFlush();
             }

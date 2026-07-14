@@ -22,6 +22,7 @@ KeepUp is a self-hosted, agentless dashboard for monitoring Linux servers over S
 - Scan every monitor on demand or request a scan for one specific monitor.
 - Run scheduled scans daily at `08:00` in the application's configured timezone.
 - Automatically refresh the dashboard every five minutes.
+- Optionally send Telegram alerts after scans when a monitor is unreachable or reaches an uptime or available-updates threshold.
 
 For each supported server, KeepUp collects:
 
@@ -52,6 +53,18 @@ For each supported server, KeepUp collects:
 - Docker keeps the database and encrypted private-key storage in persistent named volumes.
 
 Back up `APP_KEY` securely. Losing or changing it makes previously encrypted passwords and private keys unreadable.
+
+### Telegram notifications
+
+Enable the integration and set its bot and destination values:
+
+```dotenv
+TELEGRAM_ENABLED=true
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_CHAT_ID=your-chat-id
+```
+
+`TELEGRAM_ENABLED` is the global switch and defaults to `false`. `TELEGRAM_BOT_TOKEN` is the token issued for the bot, and `TELEGRAM_CHAT_ID` is the user, group or channel that should receive alerts. KeepUp sends one consolidated message after each affected monitor scan when the monitor is down or unreachable, its available updates meet the configured threshold, or its uptime meets the configured threshold. Telegram errors are logged and do not fail the monitor scan.
 
 ## Supported operating systems
 
@@ -95,6 +108,7 @@ The included stack runs the web application, MySQL 8.4, a queue worker and the L
     - Set `APP_URL` to the URL used to access KeepUp.
     - Give `DB_PASSWORD` and `MYSQL_PASSWORD` the same strong value.
     - Set a different strong value for `MYSQL_ROOT_PASSWORD`.
+    - Optionally set `TELEGRAM_ENABLED=true`, `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` to enable monitor alerts.
 
 3. Build the image and generate the Laravel application key:
 
