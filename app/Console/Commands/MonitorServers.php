@@ -181,7 +181,7 @@ class MonitorServers extends Command
 
                     // Find out how many updates do you have
                     if (collect(['Debian', 'Ubuntu', 'Proxmox VE'])->contains($result['operating_system'])) {
-                        $request = $process->execute('apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
+                        $request = $process->execute('apt update 2>/dev/null; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
 
                         if ($request->isSuccessful()) {
                             $result['updates_available'] = Str::replace("\n", '', $request->getOutput());
