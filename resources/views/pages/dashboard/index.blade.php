@@ -69,19 +69,29 @@
                 <table class="monitor-table">
                     <thead>
                         <tr>
-                            <th>Monitor</th>
-                            <th>Status</th>
-                            <th>Operating system</th>
-                            <th>Updates</th>
-                            <th>Uptime</th>
-                            <th>Load</th>
-                            <th>Docker</th>
+                            <th aria-sort="ascending"><button type="button" class="sort-button" data-sort-key="name" data-sort-type="text">Monitor<i class="fas fa-arrow-up sort-icon" aria-hidden="true"></i></button></th>
+                            <th><button type="button" class="sort-button" data-sort-key="status" data-sort-type="text">Status<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
+                            <th><button type="button" class="sort-button" data-sort-key="os" data-sort-type="text">Operating system<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
+                            <th><button type="button" class="sort-button" data-sort-key="updates" data-sort-type="number">Updates<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
+                            <th><button type="button" class="sort-button" data-sort-key="uptime" data-sort-type="number">Uptime<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
+                            <th><button type="button" class="sort-button" data-sort-key="load" data-sort-type="number">Load<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
+                            <th><button type="button" class="sort-button" data-sort-key="docker" data-sort-type="number">Docker<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
                             <th class="actions-column">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($monitors as $monitor)
-                            <tr class="monitor-row" data-label-ids="{{ $monitor->labels->pluck('id')->implode(',') }}">
+                            <tr
+                                class="monitor-row"
+                                data-label-ids="{{ $monitor->labels->pluck('id')->implode(',') }}"
+                                data-sort-name="{{ Str::lower($monitor->name) }}"
+                                data-sort-status="{{ $monitor->latest_check_positive ? 'healthy' : 'unreachable' }}"
+                                data-sort-os="{{ Str::lower($monitor->operating_system_full_version ?: 'unknown') }}"
+                                data-sort-updates="{{ $monitor->updates_available ?? '' }}"
+                                data-sort-uptime="{{ $monitor->uptime ?? '' }}"
+                                data-sort-load="{{ $monitor->cpu_load !== null ? (float) $monitor->cpu_load : '' }}"
+                                data-sort-docker="{{ $monitor->docker_daemon_running == 1 ? ($monitor->docker_active_containers ?? 0) : '' }}"
+                            >
                                 <td data-label="Monitor">
                                     <div class="monitor-identity">
                                         <button
@@ -235,6 +245,56 @@
 @section('page-js')
 <script>
     var selectedLabelFilters = new Set();
+
+    function sortMonitors(sortKey, sortType, direction) {
+        var tbody = $('.monitor-table tbody');
+        var emptyRow = tbody.children('.filtered-empty-row').detach();
+        var monitorGroups = tbody.children('.monitor-row').map(function (index, row) {
+            var monitorRow = $(row);
+
+            return {
+                row: row,
+                detailsRow: document.getElementById('monitor-details-' + monitorRow.find('[data-id-monitor]').first().attr('data-id-monitor')),
+                value: monitorRow.attr('data-sort-' + sortKey),
+                index: index
+            };
+        }).get();
+
+        monitorGroups.sort(function (left, right) {
+            var leftMissing = left.value === '' || left.value === undefined;
+            var rightMissing = right.value === '' || right.value === undefined;
+
+            if (leftMissing !== rightMissing) {
+                return leftMissing ? 1 : -1;
+            }
+
+            var comparison = sortType === 'number'
+                ? Number(left.value) - Number(right.value)
+                : String(left.value).localeCompare(String(right.value), undefined, { numeric: true, sensitivity: 'base' });
+
+            return comparison === 0 ? left.index - right.index : comparison * (direction === 'ascending' ? 1 : -1);
+        });
+
+        monitorGroups.forEach(function (group) {
+            tbody.append(group.row);
+            tbody.append(group.detailsRow);
+        });
+        tbody.append(emptyRow);
+    }
+
+    $('.sort-button').on('click', function () {
+        var button = $(this);
+        var header = button.closest('th');
+        var currentDirection = header.attr('aria-sort');
+        var direction = currentDirection === 'ascending' ? 'descending' : 'ascending';
+
+        $('.monitor-table th[aria-sort]').removeAttr('aria-sort');
+        $('.sort-button .sort-icon').attr('class', 'fas fa-sort sort-icon');
+        header.attr('aria-sort', direction);
+        button.find('.sort-icon').attr('class', 'fas fa-arrow-' + (direction === 'ascending' ? 'up' : 'down') + ' sort-icon');
+
+        sortMonitors(button.attr('data-sort-key'), button.attr('data-sort-type'), direction);
+    });
 
     function applyLabelFilters() {
         var visibleCount = 0;
