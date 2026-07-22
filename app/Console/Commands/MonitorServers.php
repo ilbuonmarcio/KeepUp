@@ -198,7 +198,7 @@ class MonitorServers extends Command
 
                 if (! $result['connected_successfully']) {
                     // Saving to database
-                    $system->latest_check_positive = 0;
+                    $system->markCheckFailed();
                     $system->operating_system = null;
                     $system->operating_system_full_version = null;
                     $system->updates_available = null;
@@ -211,7 +211,7 @@ class MonitorServers extends Command
                     $system->firewall_rules = null;
                 } else {
                     // Saving to database
-                    $system->latest_check_positive = 1;
+                    $system->markCheckSuccessful();
                     $system->operating_system = $result['operating_system'];
                     $system->operating_system_full_version = $result['operating_system_full_version'];
                     $system->updates_available = $result['updates_available'];
@@ -224,7 +224,6 @@ class MonitorServers extends Command
                     $system->firewall_rules = json_encode($result['firewall_rules']);
                 }
 
-                $system->latest_successful_check = Carbon::now();
                 $system->check_time = $init->diffInMilliseconds(Carbon::now());
                 $system->save();
 
@@ -240,7 +239,7 @@ class MonitorServers extends Command
                 Log::channel('monitors_stacked')->error("Error while checking monitor for system [$system->name]", [$e->getMessage()]);
 
                 // Saving the failure
-                $system->latest_check_positive = 0;
+                $system->markCheckFailed();
                 $system->operating_system = null;
                 $system->operating_system_full_version = null;
                 $system->updates_available = null;

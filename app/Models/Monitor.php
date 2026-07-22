@@ -17,6 +17,34 @@ class Monitor extends Model
 
     protected ?string $temporarySshKey = null;
 
+    protected static function booted(): void
+    {
+        static::updated(function (Monitor $monitor): void {
+            if ($monitor->wasChanged('ssh_private_key')) {
+                static::deleteSshKeyIfUnused($monitor->getOriginal('ssh_private_key'));
+            }
+        });
+
+        static::deleted(function (Monitor $monitor): void {
+            static::deleteSshKeyIfUnused($monitor->ssh_private_key);
+        });
+    }
+
+    private static function deleteSshKeyIfUnused(?string $filename): void
+    {
+        if (blank($filename)) {
+            return;
+        }
+
+        $isStillUsed = static::query()
+            ->where('ssh_private_key', $filename)
+            ->exists();
+
+        if (! $isStillUsed) {
+            Storage::disk('private_keys')->delete($filename);
+        }
+    }
+
     public function labels(): BelongsToMany
     {
         return $this->belongsToMany(Label::class);
@@ -121,6 +149,17 @@ class Monitor extends Model
     public function thresholdUpdatesAvailableTriggered()
     {
         return $this->updates_available >= $this->threshold_updates_available;
+    }
+
+    public function markCheckSuccessful(?Carbon $checkedAt = null): void
+    {
+        $this->latest_check_positive = 1;
+        $this->latest_successful_check = $checkedAt ?? Carbon::now();
+    }
+
+    public function markCheckFailed(): void
+    {
+        $this->latest_check_positive = 0;
     }
 
     public function version()

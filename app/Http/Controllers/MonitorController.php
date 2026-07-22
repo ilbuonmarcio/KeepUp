@@ -65,8 +65,6 @@ class MonitorController extends Controller
             'id_monitor' => 'integer|required',
         ]);
 
-        // TODO: remove ssh key file before deleting!
-
         $monitor = Monitor::findOrFail($validated['id_monitor']);
         $monitor->delete();
 
