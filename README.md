@@ -1,6 +1,6 @@
 # KeepUp
 
-KeepUp is a self-hosted, agentless dashboard for monitoring Linux servers over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
+KeepUp is a self-hosted, agentless dashboard for monitoring Linux and Windows servers over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
 
 ## Screenshots
 
@@ -72,8 +72,10 @@ TELEGRAM_CHAT_ID=your-chat-id
 - Ubuntu
 - Arch Linux
 - Proxmox VE
+- Windows 10 and 11
+- Windows Server 2019, 2022 and 2025
 
-KeepUp currently targets these Linux distributions and expects SSH on the standard port `22`.
+KeepUp expects SSH on the standard port `22`. Windows hosts require OpenSSH Server and Windows PowerShell 5.1 or newer; PowerShell does not need to be configured as the default SSH shell.
 
 ## Monitored-server requirements
 
@@ -85,6 +87,8 @@ The KeepUp host or containers must be able to reach each monitored server over S
 - `ufw status` when firewall status should be collected.
 
 These optional Docker and UFW values depend on their commands being installed and usable by the configured account.
+
+On Windows, KeepUp uses PowerShell and CIM to collect system information. The SSH account must be able to query CIM, network and firewall information. Pending updates are queried through Windows Update Agent and may take longer when the machine uses Microsoft Update or WSUS.
 
 ## Run with Docker Compose
 

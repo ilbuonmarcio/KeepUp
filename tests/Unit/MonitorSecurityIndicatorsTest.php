@@ -27,3 +27,12 @@ test('firewall detection requires an active firewall status', function () {
 
     expect($monitor->firewallIsActive())->toBeFalse();
 });
+
+test('windows firewall profiles use the shared active status marker', function () {
+    $monitor = new Monitor;
+    $monitor->operating_system = 'Windows';
+    $monitor->firewall_rules = json_encode(['Status: active', 'Domain: enabled', 'Public: enabled']);
+
+    expect($monitor->firewallIsActive())->toBeTrue()
+        ->and($monitor->firewallRules())->toContain('Domain: enabled');
+});

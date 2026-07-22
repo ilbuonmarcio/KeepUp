@@ -74,7 +74,7 @@
                             <th><button type="button" class="sort-button" data-sort-key="os" data-sort-type="text">Operating system<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
                             <th><button type="button" class="sort-button" data-sort-key="updates" data-sort-type="number">Updates<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
                             <th><button type="button" class="sort-button" data-sort-key="uptime" data-sort-type="number">Uptime<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
-                            <th><button type="button" class="sort-button" data-sort-key="load" data-sort-type="number">Load<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
+                            <th><button type="button" class="sort-button" data-sort-key="load" data-sort-type="number">CPU / load<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
                             <th><button type="button" class="sort-button" data-sort-key="docker" data-sort-type="number">Docker<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
                             <th class="actions-column">Actions</th>
                         </tr>
@@ -168,7 +168,7 @@
                                 <td data-label="Uptime">
                                     <span class="metric-value {{ $monitor->thresholdUptimeTriggered() ? 'is-warning' : '' }}">{{ $monitor->uptime !== null ? $monitor->uptime.' days' : '—' }}</span>
                                 </td>
-                                <td data-label="CPU load"><span class="metric-value">{{ $monitor->cpu_load ?: '—' }}</span></td>
+                                <td data-label="CPU / load"><span class="metric-value">{{ $monitor->cpu_load ?: '—' }}{{ $monitor->operating_system === 'Windows' && $monitor->cpu_load !== null ? '%' : '' }}</span></td>
                                 <td data-label="Docker">
                                     @if($monitor->docker_daemon_running == 1)
                                         <span class="docker-status"><i class="fa-brands fa-docker"></i> {{ $monitor->docker_active_containers }} active</span>

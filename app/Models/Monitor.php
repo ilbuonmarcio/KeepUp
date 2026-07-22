@@ -103,22 +103,22 @@ class Monitor extends Model
             return false;
         }
 
-        return collect($rules)->contains(fn ($rule) => trim($rule) === 'Status: active');
+        return collect($rules)->contains(fn ($rule) => strcasecmp(trim($rule), 'Status: active') === 0);
     }
 
     public function firewallRules()
     {
         if (is_null($this->firewall_rules)) {
-            return '<span class="notify-label"><i class="fas fa-warning"></i> UFW Not Installed</span>';
+            return '<span class="notify-label"><i class="fas fa-warning"></i> Firewall information unavailable</span>';
         } else {
             $str = '';
             $rows = collect(json_decode($this->firewall_rules, JSON_OBJECT_AS_ARRAY));
 
             if (count($rows) == 0) {
-                return '<span class="notify-label"><i class="fas fa-warning"></i> UFW Not Installed</span>';
+                return '<span class="notify-label"><i class="fas fa-warning"></i> Firewall information unavailable</span>';
             }
             if ($rows->first() == 'Status: inactive') {
-                return '<span class="warning-label"><i class="fas fa-warning"></i> UFW inactive</span>';
+                return '<span class="warning-label"><i class="fas fa-warning"></i> Firewall inactive</span>';
             }
 
             foreach ($rows as $row) {
@@ -211,6 +211,9 @@ class Monitor extends Model
 
             case 'Proxmox VE':
                 return '<img src="/images/os-icons/proxmox.svg"/ style="height:1em; vertical-align:-0.1em;">';
+
+            case 'Windows':
+                return '<i class="fa-brands fa-windows color-windows"></i>';
 
             default:
                 return '';

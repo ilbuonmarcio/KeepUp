@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Monitor;
 use App\Models\MonitorLastRefresh;
 use App\Services\TelegramMonitorNotifier;
+use App\Services\WindowsPowerShellCollector;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -34,7 +35,7 @@ class MonitorServers extends Command
     /**
      * Execute the console command.
      */
-    public function handle(TelegramMonitorNotifier $telegramNotifier)
+    public function handle(TelegramMonitorNotifier $telegramNotifier, WindowsPowerShellCollector $windowsCollector)
     {
         $systems = Monitor::query()
             ->when($this->option('monitor') !== null, fn ($query) => $query->whereKey($this->option('monitor')))
@@ -92,14 +93,29 @@ class MonitorServers extends Command
                 }
 
                 $request = $process->execute('cat /etc/*-release | grep "^PRETTY_NAME="');
+                $windowsResult = null;
 
                 if (! $request->isSuccessful()) {
-                    Log::channel('monitors_stacked')->error("Monitor for system [$system->name] encountered an error");
+                    // Spatie SSH uses `bash -se` by default. Windows OpenSSH normally
+                    // starts cmd.exe, so execute PowerShell directly for this probe.
+                    $process = $process->removeBash();
+                    $windowsRequest = $process->execute($windowsCollector->command());
+                    $windowsResult = $windowsCollector->parse($windowsRequest->getOutput());
+
+                    if ($windowsResult !== null) {
+                        $result = array_replace($result, $windowsResult);
+                        $result['connected_successfully'] = true;
+                    } else {
+                        Log::channel('monitors_stacked')->error("Monitor for system [$system->name] encountered an SSH or OS detection error", [
+                            'linux_probe_error' => trim($request->getErrorOutput()),
+                            'windows_probe_error' => trim($windowsRequest->getErrorOutput()),
+                        ]);
+                    }
                 } else {
                     $result['connected_successfully'] = true;
                 }
 
-                if ($result['connected_successfully']) {
+                if ($result['connected_successfully'] && $windowsResult === null) {
                     $output = $request->getOutput();
 
                     // Find out os name
@@ -181,7 +197,7 @@ class MonitorServers extends Command
 
                     // Find out how many updates do you have
                     if (collect(['Debian', 'Ubuntu', 'Proxmox VE'])->contains($result['operating_system'])) {
-                        $request = $process->execute('apt update 2>/dev/null; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
+                        $request = $process->execute('apt update >/dev/null 2>&1; apt list --upgradable 2>/dev/null | tail -n +2 | wc -l');
 
                         if ($request->isSuccessful()) {
                             $result['updates_available'] = Str::replace("\n", '', $request->getOutput());
