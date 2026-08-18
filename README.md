@@ -159,6 +159,11 @@ docker compose down
 
 The database and encrypted SSH keys survive a normal `docker compose down`. Running `docker compose down --volumes` permanently deletes both named volumes and their data.
 
+## Potential future additions
+
+- Proxmox API integration to automatically discover, add and manage virtual machines and LXC containers.
+- Windows domain integration to automatically discover, add and manage domain-joined servers and computers.
+
 ## License
 
 KeepUp is licensed under the [MIT License](LICENSE).
