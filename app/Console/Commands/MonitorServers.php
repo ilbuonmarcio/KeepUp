@@ -74,6 +74,7 @@ class MonitorServers extends Command
                     'disks_status' => null,
                     'docker_daemon_running' => null,
                     'docker_active_containers' => null,
+                    'docker_active_container_names' => null,
                     'firewall_rules' => null,
                 ];
 
@@ -169,6 +170,16 @@ class MonitorServers extends Command
                                 if ($request->isSuccessful()) {
                                     $result['docker_active_containers'] = Str::replace("\n", '', $request->getOutput());
                                 }
+
+                                $request = $process->execute("docker ps --format '{{.Names}}'");
+
+                                if ($request->isSuccessful()) {
+                                    $result['docker_active_container_names'] = Str::of($request->getOutput())
+                                        ->explode("\n")
+                                        ->filter()
+                                        ->values()
+                                        ->toArray();
+                                }
                             }
                         }
 
@@ -208,6 +219,7 @@ class MonitorServers extends Command
                     $system->disks_status = null;
                     $system->docker_daemon_running = null;
                     $system->docker_active_containers = null;
+                    $system->docker_active_container_names = null;
                     $system->firewall_rules = null;
                 } else {
                     // Saving to database
@@ -221,6 +233,7 @@ class MonitorServers extends Command
                     $system->disks_status = $result['disks_status'];
                     $system->docker_daemon_running = $result['docker_daemon_running'];
                     $system->docker_active_containers = $result['docker_active_containers'];
+                    $system->docker_active_container_names = json_encode($result['docker_active_container_names']);
                     $system->firewall_rules = json_encode($result['firewall_rules']);
                 }
 
@@ -250,6 +263,7 @@ class MonitorServers extends Command
                 $system->disks_status = null;
                 $system->docker_daemon_running = null;
                 $system->docker_active_containers = null;
+                $system->docker_active_container_names = null;
                 $system->save();
 
                 $telegramNotifier->notify($system);

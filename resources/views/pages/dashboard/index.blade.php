@@ -171,7 +171,14 @@
                                 <td data-label="CPU load"><span class="metric-value">{{ $monitor->cpu_load ?: '—' }}</span></td>
                                 <td data-label="Docker">
                                     @if($monitor->docker_daemon_running == 1)
-                                        <span class="docker-status"><i class="fa-brands fa-docker"></i> {{ $monitor->docker_active_containers }} active</span>
+                                        @php($dockerContainerNames = $monitor->dockerActiveContainerNames())
+                                        <span
+                                            class="docker-status"
+                                            @if($dockerContainerNames)
+                                                title="{{ implode("\n", $dockerContainerNames) }}"
+                                                aria-label="{{ $monitor->docker_active_containers }} active containers: {{ implode(', ', $dockerContainerNames) }}"
+                                            @endif
+                                        ><i class="fa-brands fa-docker"></i> {{ $monitor->docker_active_containers }} active</span>
                                     @else
                                         <span class="muted">Not running</span>
                                     @endif

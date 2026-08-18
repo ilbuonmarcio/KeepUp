@@ -78,6 +78,13 @@ class Monitor extends Model
         return collect($rules)->contains(fn ($rule) => trim($rule) === 'Status: active');
     }
 
+    public function dockerActiveContainerNames(): array
+    {
+        $names = json_decode($this->docker_active_container_names ?? '[]', true);
+
+        return is_array($names) ? $names : [];
+    }
+
     public function firewallRules()
     {
         if (is_null($this->firewall_rules)) {

@@ -42,3 +42,22 @@ test('dashboard monitor table exposes sortable columns and values', function () 
         ->assertSee('data-sort-updates="7"', false)
         ->assertSee('data-sort-uptime="42"', false);
 });
+
+test('dashboard shows active Docker container names on hover', function () {
+    $monitor = new Monitor;
+    $monitor->name = 'Docker server';
+    $monitor->hostname_ip = '192.0.2.1';
+    $monitor->username = 'keepup';
+    $monitor->auth_method = 'password';
+    $monitor->password = 'encrypted-password';
+    $monitor->docker_daemon_running = 1;
+    $monitor->docker_active_containers = 2;
+    $monitor->docker_active_container_names = json_encode(['nginx', 'postgres']);
+    $monitor->save();
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard.index'))
+        ->assertOk()
+        ->assertSee("title=\"nginx\npostgres\"", false)
+        ->assertSee('aria-label="2 active containers: nginx, postgres"', false);
+});
