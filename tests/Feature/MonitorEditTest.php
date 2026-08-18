@@ -136,6 +136,8 @@ test('a monitor can switch from an ssh key to a password', function () {
     expect($monitor->auth_method)->toBe('password')
         ->and(Crypt::decryptString($monitor->password))->toBe('replacement-password')
         ->and($monitor->ssh_private_key)->toBeNull();
+
+    Storage::disk('private_keys')->assertMissing('existing-key.key');
 });
 
 test('guests cannot edit monitors', function () {

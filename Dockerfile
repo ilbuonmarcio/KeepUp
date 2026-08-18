@@ -34,6 +34,7 @@ RUN apt-get update \
         gosu \
         libonig-dev \
         openssh-client \
+        sshpass \
     && docker-php-ext-install -j"$(nproc)" mbstring pcntl pdo_mysql \
     && a2enmod headers rewrite \
     && rm -rf /var/lib/apt/lists/*

@@ -116,3 +116,49 @@ test('decrypted ssh key files are unique and removed after use', function () {
 
     expect(file_exists($temporaryPath))->toBeFalse();
 });
+
+test('deleting the last monitor using an ssh key removes the encrypted key file', function () {
+    Storage::fake('private_keys');
+
+    Storage::disk('private_keys')->put('stored-key.key', Crypt::encryptString('existing-private-key'));
+    $monitor = storedKeyMonitor();
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('monitors.delete'), ['id_monitor' => $monitor->getKey()])
+        ->assertOk()
+        ->assertJson(['status' => true]);
+
+    Storage::disk('private_keys')->assertMissing('stored-key.key');
+});
+
+test('deleting a monitor preserves an ssh key that another monitor still uses', function () {
+    Storage::fake('private_keys');
+
+    Storage::disk('private_keys')->put('shared-key.key', Crypt::encryptString('shared-private-key'));
+    $firstMonitor = storedKeyMonitor('shared-key.key');
+    $secondMonitor = $firstMonitor->replicate();
+    $secondMonitor->name = 'Second server';
+    $secondMonitor->save();
+
+    $firstMonitor->delete();
+
+    Storage::disk('private_keys')->assertExists('shared-key.key');
+
+    $secondMonitor->delete();
+
+    Storage::disk('private_keys')->assertMissing('shared-key.key');
+});
+
+test('changing away from an ssh key removes it when no monitor still uses it', function () {
+    Storage::fake('private_keys');
+
+    Storage::disk('private_keys')->put('old-key.key', Crypt::encryptString('old-private-key'));
+    $monitor = storedKeyMonitor('old-key.key');
+
+    $monitor->ssh_private_key = null;
+    $monitor->auth_method = 'password';
+    $monitor->password = Crypt::encryptString('replacement-password');
+    $monitor->save();
+
+    Storage::disk('private_keys')->assertMissing('old-key.key');
+});

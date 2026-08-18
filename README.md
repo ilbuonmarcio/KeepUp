@@ -1,6 +1,6 @@
 # KeepUp
 
-KeepUp is a self-hosted, agentless dashboard for monitoring Linux servers over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
+KeepUp is a self-hosted, agentless dashboard for monitoring Linux and Windows servers over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
 
 ## Screenshots
 
@@ -72,8 +72,10 @@ TELEGRAM_CHAT_ID=your-chat-id
 - Ubuntu
 - Arch Linux
 - Proxmox VE
+- Windows 10 and 11
+- Windows Server 2019, 2022 and 2025
 
-KeepUp currently targets these Linux distributions and expects SSH on the standard port `22`.
+KeepUp expects SSH on the standard port `22`. Windows hosts require OpenSSH Server and Windows PowerShell 5.1 or newer; PowerShell does not need to be configured as the default SSH shell.
 
 ## Monitored-server requirements
 
@@ -85,6 +87,41 @@ The KeepUp host or containers must be able to reach each monitored server over S
 - `ufw status` when firewall status should be collected.
 
 These optional Docker and UFW values depend on their commands being installed and usable by the configured account.
+
+On Windows, KeepUp uses PowerShell and CIM to collect system information. The SSH account must be able to query CIM, network and firewall information. Pending updates are queried through Windows Update Agent and may take longer when the machine uses Microsoft Update or WSUS.
+
+### Windows client setup
+
+Run the following commands in PowerShell as an administrator on the Windows machine:
+
+```powershell
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+Start-Service sshd
+Set-Service -Name sshd -StartupType Automatic
+
+if (-not (Get-NetFirewallRule -Name OpenSSH-Server-In-TCP -ErrorAction SilentlyContinue)) {
+    New-NetFirewallRule `
+        -Name OpenSSH-Server-In-TCP `
+        -DisplayName 'OpenSSH Server (sshd)' `
+        -Enabled True `
+        -Direction Inbound `
+        -Protocol TCP `
+        -Action Allow `
+        -LocalPort 22
+}
+
+Test-NetConnection -ComputerName localhost -Port 22
+```
+
+Use `ipconfig` to find an address reachable from the KeepUp containers, then add the machine as a normal monitor on port `22`. Both password and SSH private-key authentication are supported. Test the same credentials from the KeepUp host before adding the monitor:
+
+```bash
+ssh windows-user@windows-address
+```
+
+For public-key authentication, standard users use `%USERPROFILE%\.ssh\authorized_keys`. Accounts in the local Administrators group use `%ProgramData%\ssh\administrators_authorized_keys`, which must have the restrictive ACLs expected by Windows OpenSSH. KeepUp invokes `powershell.exe` explicitly, so changing the Windows OpenSSH default shell is unnecessary.
+
+The Windows Update Agent query is allowed up to 30 seconds. If it is unavailable or times out, the remaining system metrics are still recorded and the updates value is left unavailable.
 
 ## Run with Docker Compose
 
