@@ -147,6 +147,10 @@ class MonitorController extends Controller
         return Monitor::query()
             ->where('auth_method', 'ssh_private_key')
             ->whereNotNull('ssh_private_key')
+            ->orderBy('name')
+            ->orderBy('hostname_ip')
+            ->orderBy('username')
+            ->orderBy('id')
             ->get(['id', 'name', 'hostname_ip', 'username', 'ssh_private_key'])
             ->unique('ssh_private_key')
             ->reject(fn (Monitor $monitor) => $currentMonitor

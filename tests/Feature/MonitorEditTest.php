@@ -102,6 +102,36 @@ test('an ssh private key can be retained while editing a monitor', function () {
     expect($monitor->fresh()->ssh_private_key)->toBe('existing-key.key');
 });
 
+test('reusable ssh private key sources are sorted on the edit form', function () {
+    Storage::fake('private_keys');
+
+    foreach (['current-key.key', 'alpha-key.key', 'zulu-key.key'] as $key) {
+        Storage::disk('private_keys')->put($key, Crypt::encryptString('private-key'));
+    }
+
+    $monitor = editableMonitor('ssh_private_key');
+    $monitor->ssh_private_key = 'current-key.key';
+    $monitor->save();
+
+    $zulu = $monitor->replicate();
+    $zulu->name = 'Zulu server';
+    $zulu->ssh_private_key = 'zulu-key.key';
+    $zulu->save();
+
+    $alpha = $monitor->replicate();
+    $alpha->name = 'Alpha server';
+    $alpha->ssh_private_key = 'alpha-key.key';
+    $alpha->save();
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('monitors.edit', $monitor))
+        ->assertOk()
+        ->assertSeeInOrder([
+            'Reuse key from Alpha server',
+            'Reuse key from Zulu server',
+        ]);
+});
+
 test('switching authentication methods requires replacement credentials', function () {
     Storage::fake('private_keys');
     Bus::fake();
