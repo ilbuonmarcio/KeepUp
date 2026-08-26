@@ -11,9 +11,12 @@ class DashboardController extends Controller
     public function index()
     {
         $monitors = Monitor::query()
-            ->with(['labels' => fn ($query) => $query
-                ->orderByRaw('LOWER(name) ASC')
-                ->orderBy('name')])
+            ->with([
+                'windowsDomain:id,name',
+                'labels' => fn ($query) => $query
+                    ->orderByRaw('LOWER(name) ASC')
+                    ->orderBy('name'),
+            ])
             ->orderByRaw('LOWER(name) ASC')
             ->orderBy('name')
             ->get();

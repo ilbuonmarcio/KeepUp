@@ -31,11 +31,14 @@ FROM php:8.4-apache-trixie AS runtime
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         curl \
+        ca-certificates \
         gosu \
+        libldap2-dev \
         libonig-dev \
         openssh-client \
         sshpass \
-    && docker-php-ext-install -j"$(nproc)" mbstring pcntl pdo_mysql \
+    && docker-php-ext-configure ldap \
+    && docker-php-ext-install -j"$(nproc)" ldap mbstring pcntl pdo_mysql \
     && a2enmod headers rewrite \
     && rm -rf /var/lib/apt/lists/*
 

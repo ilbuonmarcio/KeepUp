@@ -82,7 +82,7 @@
                     <tbody>
                         @foreach($monitors as $monitor)
                             <tr
-                                class="monitor-row"
+                                class="monitor-row {{ $monitor->windows_domain_id ? 'domain-managed' : '' }}"
                                 data-label-ids="{{ $monitor->labels->pluck('id')->implode(',') }}"
                                 data-sort-name="{{ Str::lower($monitor->name) }}"
                                 data-sort-status="{{ $monitor->latest_check_positive ? 'healthy' : 'unreachable' }}"
@@ -107,7 +107,12 @@
                                         ><i class="fas fa-chevron-right"></i></button>
                                         <span class="status-dot {{ $monitor->latest_check_positive ? 'is-healthy' : 'is-unreachable' }}"></span>
                                         <div>
-                                            <strong>{{ $monitor->name }}</strong>
+                                            <div class="monitor-name-line">
+                                                <strong>{{ $monitor->name }}</strong>
+                                                @if($monitor->windowsDomain)
+                                                    <span class="domain-managed-badge" title="Discovered from {{ $monitor->windowsDomain->name }}"><i class="fas fa-building-shield"></i>{{ $monitor->windowsDomain->name }}</span>
+                                                @endif
+                                            </div>
                                             <div class="monitor-meta">
                                                 <span class="monitor-address">{{ $monitor->username }}&#64;{{ $monitor->hostname_ip }}</span>
                                                 <span class="security-hints">
@@ -186,8 +191,12 @@
                                 <td data-label="Actions">
                                     <div class="monitor-actions">
                                         <button type="button" class="button secondary" data-action="refresh-monitor" data-id-monitor="{{ $monitor->id }}"><i class="fas fa-rotate"></i><span>Refresh</span></button>
-                                        <a href="{{ route('monitors.edit', $monitor) }}" class="button icon-button" title="Edit monitor" aria-label="Edit {{ $monitor->name }}"><i class="fas fa-pen"></i></a>
-                                        <button type="button" class="icon-button danger" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}" data-monitor-name="{{ $monitor->name }}" title="Delete monitor" aria-label="Delete {{ $monitor->name }}"><i class="fas fa-trash"></i></button>
+                                        @if($monitor->windows_domain_id === null)
+                                            <a href="{{ route('monitors.edit', $monitor) }}" class="button icon-button" title="Edit monitor" aria-label="Edit {{ $monitor->name }}"><i class="fas fa-pen"></i></a>
+                                            <button type="button" class="icon-button danger" data-action="delete-monitor" data-id-monitor="{{ $monitor->id }}" data-monitor-name="{{ $monitor->name }}" title="Delete monitor" aria-label="Delete {{ $monitor->name }}"><i class="fas fa-trash"></i></button>
+                                        @else
+                                            <a href="{{ route('configuration.index') }}" class="button icon-button" title="Managed from Configuration" aria-label="Configure domain for {{ $monitor->name }}"><i class="fas fa-gear"></i></a>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -198,6 +207,7 @@
                                             <h3>Connection</h3>
                                             <dl>
                                                 <div><dt>Authentication</dt><dd>{{ $monitor->authMethod() }}</dd></div>
+                                                @if($monitor->windowsDomain)<div><dt>Source</dt><dd>{{ $monitor->windowsDomain->name }} domain discovery</dd></div>@endif
                                                 <div><dt>IP addresses</dt><dd>{!! $monitor->ipAddresses() !!}</dd></div>
                                             </dl>
                                         </section>

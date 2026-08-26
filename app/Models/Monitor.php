@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
@@ -40,9 +41,18 @@ class Monitor extends Model
             ->where('ssh_private_key', $filename)
             ->exists();
 
-        if (! $isStillUsed) {
+        $isUsedByDomain = WindowsDomain::query()
+            ->where('ssh_private_key', $filename)
+            ->exists();
+
+        if (! $isStillUsed && ! $isUsedByDomain) {
             Storage::disk('private_keys')->delete($filename);
         }
+    }
+
+    public function windowsDomain(): BelongsTo
+    {
+        return $this->belongsTo(WindowsDomain::class);
     }
 
     public function labels(): BelongsToMany

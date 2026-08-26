@@ -4,7 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Monitor;
 use App\Models\MonitorLastRefresh;
+use App\Models\WindowsDomain;
 use App\Services\TelegramMonitorNotifier;
+use App\Services\WindowsDomainSynchronizer;
 use App\Services\WindowsPowerShellCollector;
 use Exception;
 use Illuminate\Console\Command;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\Ssh\Ssh;
+use Throwable;
 
 class MonitorServers extends Command
 {
@@ -35,8 +38,27 @@ class MonitorServers extends Command
     /**
      * Execute the console command.
      */
-    public function handle(TelegramMonitorNotifier $telegramNotifier, WindowsPowerShellCollector $windowsCollector)
+    public function handle(
+        TelegramMonitorNotifier $telegramNotifier,
+        WindowsPowerShellCollector $windowsCollector,
+        WindowsDomainSynchronizer $domainSynchronizer,
+    )
     {
+        if ($this->option('monitor') === null) {
+            WindowsDomain::query()->each(function (WindowsDomain $domain) use ($domainSynchronizer): void {
+                try {
+                    $count = $domainSynchronizer->sync($domain);
+                    Log::channel('monitors_stacked')->info("Windows domain [{$domain->name}] synchronized", [
+                        'computers' => $count,
+                    ]);
+                } catch (Throwable $exception) {
+                    Log::channel('monitors_stacked')->error("Windows domain [{$domain->name}] discovery failed", [
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
+            });
+        }
+
         $systems = Monitor::query()
             ->when($this->option('monitor') !== null, fn ($query) => $query->whereKey($this->option('monitor')))
             ->get();

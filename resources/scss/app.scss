@@ -443,6 +443,30 @@ table {
     background: #fcfcfe;
 }
 
+.monitor-row.domain-managed td {
+    background: #f8fbff;
+    border-top-color: #e2ebf7;
+}
+
+.monitor-row.domain-managed:hover td {
+    background: #f2f7fd;
+}
+
+.domain-managed-badge {
+    align-items: center;
+    background: #edf5ff;
+    border: 1px solid #d8e8fa;
+    border-radius: 999px;
+    color: #52749a;
+    display: inline-flex;
+    font-size: 9px;
+    font-weight: 600;
+    gap: 4px;
+    margin-left: 6px;
+    padding: 2px 6px;
+    vertical-align: 2px;
+}
+
 .monitor-identity {
     align-items: center;
     display: flex;
@@ -482,6 +506,23 @@ table {
 
 .monitor-identity strong {
     font-size: 13px;
+}
+
+.monitor-name-line {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.monitor-identity .monitor-name-line > .domain-managed-badge {
+    color: #52749a;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 9px;
+    margin: 0;
+    margin-top: 0;
+    width: fit-content;
 }
 
 .monitor-identity div > span {
@@ -989,6 +1030,72 @@ textarea::placeholder {
     gap: 10px;
     justify-content: flex-end;
     padding: 18px 28px;
+}
+
+.configuration-heading {
+    margin-bottom: 16px;
+}
+
+.configuration-heading p,
+.section-heading p {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.configuration-notice {
+    align-items: flex-start;
+    border: 1px solid;
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+}
+
+.configuration-notice.is-success {
+    background: var(--success-soft);
+    border-color: rgba(22, 138, 91, 0.28);
+    color: var(--success);
+}
+
+.configuration-notice.is-error {
+    background: var(--danger-soft);
+    border-color: rgba(201, 70, 86, 0.28);
+    color: var(--danger);
+}
+
+.configuration-notice ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.domain-panel + .domain-panel {
+    margin-top: 18px;
+}
+
+.domain-form .section-heading {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+}
+
+.domain-sync-status {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-right: auto;
+}
+
+.domain-secondary-actions {
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    padding: 14px 28px;
+}
+
+.domain-delete {
+    color: var(--danger) !important;
 }
 
 .auth-shell {

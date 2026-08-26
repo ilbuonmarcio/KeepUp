@@ -26,6 +26,8 @@ class MonitorController extends Controller
 
     public function edit(Monitor $monitor)
     {
+        abort_if($monitor->windows_domain_id !== null, 403, 'Domain-discovered monitors are managed from Configuration.');
+
         $sshKeySources = $this->sshKeySources($monitor);
         $currentSshKeyAvailable = $monitor->auth_method === 'ssh_private_key'
             && filled($monitor->ssh_private_key)
@@ -49,6 +51,8 @@ class MonitorController extends Controller
 
     public function update(Request $request, Monitor $monitor)
     {
+        abort_if($monitor->windows_domain_id !== null, 403, 'Domain-discovered monitors are managed from Configuration.');
+
         $validated = $this->validateMonitor($request);
 
         $this->fillMonitor($monitor, $request, $validated);
@@ -66,6 +70,7 @@ class MonitorController extends Controller
         ]);
 
         $monitor = Monitor::findOrFail($validated['id_monitor']);
+        abort_if($monitor->windows_domain_id !== null, 403, 'Domain-discovered monitors are managed from Configuration.');
         $monitor->delete();
 
         return ['status' => true];

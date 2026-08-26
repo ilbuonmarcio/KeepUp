@@ -54,6 +54,21 @@ For each supported server, KeepUp collects:
 
 Back up `APP_KEY` securely. Losing or changing it makes previously encrypted passwords and private keys unreadable.
 
+### Windows domain discovery
+
+The Configuration page can manage one or more Active Directory domains. KeepUp binds directly to a domain controller over LDAP, StartTLS or LDAPS with a read-only discovery account and queries enabled computer objects that have a `dNSHostName`. Each successful synchronization:
+
+- Adds newly discovered computers as monitors using their full domain hostname.
+- Updates every discovered monitor with the domain configuration's shared SSH username, authentication credential and alert thresholds.
+- Removes domain-owned monitors whose computer objects are no longer returned by Active Directory.
+- Leaves existing monitors untouched if LDAP discovery fails, preventing a temporary directory outage from deleting monitoring configuration.
+
+Discovery runs when a domain is saved, when its **Synchronize now** action is requested, and before every full scheduled or on-demand scan.
+
+Removing a Windows domain configuration removes all monitors discovered from it. Domain-owned monitors have a subtle blue dashboard background and are edited centrally from Configuration rather than individually.
+
+Use LDAPS or StartTLS in production. The KeepUp runtime must trust the certificate authority that issued the domain controller certificate. The discovery account only needs permission to bind and read Active Directory computer objects; it does not need administrative or SSH access. Monitoring connections use the separate password or private key configured for the domain. For domain SSH accounts, use the unambiguous `user@domain.example` username format.
+
 ### Telegram notifications
 
 Enable the integration and set its bot and destination values:
@@ -199,7 +214,6 @@ The database and encrypted SSH keys survive a normal `docker compose down`. Runn
 ## Potential future additions
 
 - Proxmox API integration to automatically discover, add and manage virtual machines and LXC containers.
-- Windows domain integration to automatically discover, add and manage domain-joined servers and computers.
 
 ## License
 

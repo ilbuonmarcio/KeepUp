@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\MonitorLabelController;
 use App\Http\Controllers\ProfileController;
@@ -8,6 +9,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
+
+    Route::prefix('/configuration')->group(function () {
+        Route::get('/', [ConfigurationController::class, 'index'])->name('configuration.index');
+        Route::post('/windows-domains', [ConfigurationController::class, 'store'])->name('configuration.domains.store');
+        Route::put('/windows-domains/{domain}', [ConfigurationController::class, 'update'])->name('configuration.domains.update');
+        Route::delete('/windows-domains/{domain}', [ConfigurationController::class, 'destroy'])->name('configuration.domains.destroy');
+        Route::post('/windows-domains/{domain}/sync', [ConfigurationController::class, 'sync'])->name('configuration.domains.sync');
+    });
 
     Route::prefix('/monitors')->group(function () {
         Route::get('new', [MonitorController::class, 'new'])->name('monitors.new');
