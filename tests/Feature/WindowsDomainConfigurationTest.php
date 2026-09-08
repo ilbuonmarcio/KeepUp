@@ -155,6 +155,8 @@ test('domain monitors are visually identified and cannot be edited directly', fu
         ->get(route('dashboard.index'))
         ->assertOk()
         ->assertSee('domain-managed', false)
+        ->assertSee('data-domain-filter="'.$domain->getKey().'"', false)
+        ->assertSee('data-domain-id="'.$domain->getKey().'"', false)
         ->assertSee('Corporate domain');
 
     $this->actingAs($user)

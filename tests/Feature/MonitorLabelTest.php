@@ -110,6 +110,8 @@ test('the dashboard renders label filters and monitor label metadata', function 
         ->assertOk()
         ->assertSee('data-label-filter="'.$label->getKey().'"', false)
         ->assertSee('data-label-ids="'.$label->getKey().'"', false)
+        ->assertSee('data-status-filter="healthy"', false)
+        ->assertSee('data-status-filter="unreachable"', false)
         ->assertSee('Production');
 });
 

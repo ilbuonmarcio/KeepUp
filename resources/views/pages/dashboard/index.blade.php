@@ -13,20 +13,20 @@
     </header>
 
     <section class="summary-grid" aria-label="Monitor summary">
-        <article class="summary-card summary-healthy">
+        <button type="button" class="summary-card summary-filter summary-healthy" data-status-filter="healthy" aria-pressed="false">
             <div class="summary-icon"><i class="fas fa-circle-check"></i></div>
             <div>
                 <span>Healthy</span>
                 <strong>{{ $stats['healthy'] }}</strong>
             </div>
-        </article>
-        <article class="summary-card summary-unreachable">
+        </button>
+        <button type="button" class="summary-card summary-filter summary-unreachable" data-status-filter="unreachable" aria-pressed="false">
             <div class="summary-icon"><i class="fas fa-triangle-exclamation"></i></div>
             <div>
                 <span>Needs attention</span>
                 <strong>{{ $stats['unreachable'] }}</strong>
             </div>
-        </article>
+        </button>
         <article class="summary-card summary-updates">
             <div class="summary-icon"><i class="fas fa-box-open"></i></div>
             <div>
@@ -60,6 +60,18 @@
                         @endforeach
                     </div>
                 @endif
+                @if($windowsDomains->isNotEmpty())
+                    <div class="domain-filters" aria-label="Filter monitors by Windows domain">
+                        @foreach($windowsDomains as $windowsDomain)
+                            <button
+                                type="button"
+                                class="domain-filter"
+                                data-domain-filter="{{ $windowsDomain->id }}"
+                                aria-pressed="false"
+                            ><i class="fas fa-building-shield"></i>{{ $windowsDomain->name }}</button>
+                        @endforeach
+                    </div>
+                @endif
             </div>
             <span class="count-badge" data-monitor-count data-total="{{ $monitors->count() }}">{{ $monitors->count() }} {{ Str::plural('monitor', $monitors->count()) }}</span>
         </div>
@@ -84,6 +96,7 @@
                             <tr
                                 class="monitor-row {{ $monitor->windows_domain_id ? 'domain-managed' : '' }}"
                                 data-label-ids="{{ $monitor->labels->pluck('id')->implode(',') }}"
+                                data-domain-id="{{ $monitor->windows_domain_id }}"
                                 data-sort-name="{{ Str::lower($monitor->name) }}"
                                 data-sort-status="{{ $monitor->latest_check_positive ? 'healthy' : 'unreachable' }}"
                                 data-sort-os="{{ Str::lower($monitor->operating_system_full_version ?: 'unknown') }}"
@@ -225,7 +238,7 @@
                         @endforeach
                         <tr class="filtered-empty-row" hidden>
                             <td colspan="8">
-                                <div class="filtered-empty-state"><i class="fas fa-filter-circle-xmark"></i>No monitors match the selected labels.</div>
+                                <div class="filtered-empty-state"><i class="fas fa-filter-circle-xmark"></i>No monitors match the selected filters.</div>
                             </td>
                         </tr>
                     </tbody>
@@ -262,6 +275,8 @@
 @section('page-js')
 <script>
     var selectedLabelFilters = new Set();
+    var selectedDomainFilters = new Set();
+    var selectedStatusFilter = null;
 
     function sortMonitors(sortKey, sortType, direction) {
         var tbody = $('.monitor-table tbody');
@@ -313,14 +328,19 @@
         sortMonitors(button.attr('data-sort-key'), button.attr('data-sort-type'), direction);
     });
 
-    function applyLabelFilters() {
+    function applyMonitorFilters() {
         var visibleCount = 0;
 
         $('.monitor-row').each(function () {
             var row = $(this);
             var rowLabelIds = (row.attr('data-label-ids') || '').split(',').filter(Boolean);
-            var isVisible = selectedLabelFilters.size === 0
+            var matchesLabels = selectedLabelFilters.size === 0
                 || rowLabelIds.some(function (labelId) { return selectedLabelFilters.has(labelId); });
+            var matchesDomain = selectedDomainFilters.size === 0
+                || selectedDomainFilters.has(row.attr('data-domain-id'));
+            var matchesStatus = selectedStatusFilter === null
+                || row.attr('data-sort-status') === selectedStatusFilter;
+            var isVisible = matchesLabels && matchesDomain && matchesStatus;
             var detailsRow = $('#monitor-details-' + row.find('[data-id-monitor]').first().attr('data-id-monitor'));
 
             row.toggle(isVisible);
@@ -332,7 +352,8 @@
         });
 
         var totalCount = Number($('[data-monitor-count]').attr('data-total'));
-        var countText = selectedLabelFilters.size === 0
+        var hasActiveFilters = selectedLabelFilters.size > 0 || selectedDomainFilters.size > 0 || selectedStatusFilter !== null;
+        var countText = !hasActiveFilters
             ? totalCount + ' ' + (totalCount === 1 ? 'monitor' : 'monitors')
             : visibleCount + ' of ' + totalCount + ' monitors';
 
@@ -352,7 +373,37 @@
             button.addClass('is-active').attr('aria-pressed', 'true');
         }
 
-        applyLabelFilters();
+        applyMonitorFilters();
+    });
+
+    $('button[data-domain-filter]').on('click', function () {
+        var button = $(this);
+        var domainId = button.attr('data-domain-filter');
+
+        if (selectedDomainFilters.has(domainId)) {
+            selectedDomainFilters.delete(domainId);
+            button.removeClass('is-active').attr('aria-pressed', 'false');
+        } else {
+            selectedDomainFilters.add(domainId);
+            button.addClass('is-active').attr('aria-pressed', 'true');
+        }
+
+        applyMonitorFilters();
+    });
+
+    $('button[data-status-filter]').on('click', function () {
+        var button = $(this);
+        var status = button.attr('data-status-filter');
+        var isActive = selectedStatusFilter === status;
+
+        selectedStatusFilter = isActive ? null : status;
+        $("button[data-status-filter]").removeClass("is-active").attr("aria-pressed", "false");
+
+        if (!isActive) {
+            button.addClass('is-active').attr('aria-pressed', 'true');
+        }
+
+        applyMonitorFilters();
     });
 
     $('button[data-action="toggle-monitor-details"]').on('click', function () {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Label;
 use App\Models\Monitor;
 use App\Models\MonitorLastRefresh;
+use App\Models\WindowsDomain;
 
 class DashboardController extends Controller
 {
@@ -27,9 +28,16 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get();
 
+        $windowsDomains = WindowsDomain::query()
+            ->whereHas('monitors')
+            ->orderByRaw('LOWER(name) ASC')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return view('pages.dashboard.index')->with([
             'monitors' => $monitors,
             'labels' => $labels,
+            'windowsDomains' => $windowsDomains,
             'last_refresh' => MonitorLastRefresh::latest()->first(),
             'stats' => [
                 'healthy' => $monitors->where('latest_check_positive', 1)->count(),
