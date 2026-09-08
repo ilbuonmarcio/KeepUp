@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Monitor;
 use App\Models\MonitorLastRefresh;
 use App\Models\WindowsDomain;
+use App\Services\OpnsenseCollector;
 use App\Services\TelegramMonitorNotifier;
 use App\Services\WindowsDomainSynchronizer;
 use App\Services\WindowsPowerShellCollector;
@@ -41,6 +42,7 @@ class MonitorServers extends Command
     public function handle(
         TelegramMonitorNotifier $telegramNotifier,
         WindowsPowerShellCollector $windowsCollector,
+        OpnsenseCollector $opnsenseCollector,
         WindowsDomainSynchronizer $domainSynchronizer,
     )
     {
@@ -117,28 +119,34 @@ class MonitorServers extends Command
 
                 $request = $process->execute('cat /etc/*-release | grep "^PRETTY_NAME="');
                 $windowsResult = null;
+                $opnsenseResult = null;
 
                 if (! $request->isSuccessful()) {
-                    // Spatie SSH uses `bash -se` by default. Windows OpenSSH normally
-                    // starts cmd.exe, so execute PowerShell directly for this probe.
+                    // FreeBSD does not require bash; Windows needs PowerShell invoked directly.
                     $process = $process->removeBash();
-                    $windowsRequest = $process->execute($windowsCollector->command());
-                    $windowsResult = $windowsCollector->parse($windowsRequest->getOutput());
-
-                    if ($windowsResult !== null) {
-                        $result = array_replace($result, $windowsResult);
+                    $opnsenseResult = $opnsenseCollector->collect($process);
+                    if ($opnsenseResult !== null) {
+                        $result = array_replace($result, $opnsenseResult);
                         $result['connected_successfully'] = true;
                     } else {
-                        Log::channel('monitors_stacked')->error("Monitor for system [$system->name] encountered an SSH or OS detection error", [
-                            'linux_probe_error' => trim($request->getErrorOutput()),
-                            'windows_probe_error' => trim($windowsRequest->getErrorOutput()),
-                        ]);
+                        $windowsRequest = $process->execute($windowsCollector->command());
+                        $windowsResult = $windowsCollector->parse($windowsRequest->getOutput());
+
+                        if ($windowsResult !== null) {
+                            $result = array_replace($result, $windowsResult);
+                            $result['connected_successfully'] = true;
+                        } else {
+                            Log::channel('monitors_stacked')->error("Monitor for system [$system->name] encountered an SSH or OS detection error", [
+                                'linux_probe_error' => trim($request->getErrorOutput()),
+                                'windows_probe_error' => trim($windowsRequest->getErrorOutput()),
+                            ]);
+                        }
                     }
                 } else {
                     $result['connected_successfully'] = true;
                 }
 
-                if ($result['connected_successfully'] && $windowsResult === null) {
+                if ($result['connected_successfully'] && $windowsResult === null && $opnsenseResult === null) {
                     $output = $request->getOutput();
 
                     // Find out os name

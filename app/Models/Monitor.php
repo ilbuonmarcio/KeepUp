@@ -229,6 +229,9 @@ class Monitor extends Model
             case 'Proxmox VE':
                 return '<img src="/images/os-icons/proxmox.svg"/ style="height:1em; vertical-align:-0.1em;">';
 
+            case 'OPNsense':
+                return '<i class="fas fa-shield-halved"></i>';
+
             case 'Windows':
                 return '<i class="fa-brands fa-windows color-windows"></i>';
 

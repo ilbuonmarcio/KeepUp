@@ -1,6 +1,6 @@
 # KeepUp
 
-KeepUp is a self-hosted, agentless dashboard for monitoring Linux and Windows servers over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
+KeepUp is a self-hosted, agentless dashboard for monitoring Linux and Windows servers and OPNsense firewalls over SSH. It collects a concise operational snapshot from each server and keeps health, pending updates and resource information in one place.
 
 ## Screenshots
 
@@ -87,6 +87,7 @@ TELEGRAM_CHAT_ID=your-chat-id
 - Ubuntu
 - Arch Linux
 - Proxmox VE
+- OPNsense (preview)
 - Windows 10 and 11
 - Windows Server 2019, 2022 and 2025
 
@@ -104,6 +105,16 @@ The KeepUp host or containers must be able to reach each monitored server over S
 These optional Docker and UFW values depend on their commands being installed and usable by the configured account.
 
 On Windows, KeepUp uses PowerShell and CIM to collect system information. The SSH account must be able to query CIM, network and firewall information. Pending updates are queried through Windows Update Agent and may take longer when the machine uses Microsoft Update or WSUS.
+
+### OPNsense setup (preview)
+
+OPNsense support is available as a preview. Automated collector tests pass, but live-appliance validation is still pending.
+
+Enable SSH on port `22` under **System → Settings → Administration**, then configure a user with a command shell such as `/bin/sh` under **System → Access → Users**. Add its address and password or private key as a normal KeepUp monitor; detection is automatic. See the [OPNsense SSH settings](https://docs.opnsense.org/manual/settingsmenu.html) and [user management documentation](https://docs.opnsense.org/manual/users.html).
+
+KeepUp collects the OPNsense version, uptime, IPv4 addresses, load averages, disk usage and PF firewall status/rules. PF information requires permission to read `/dev/pf`; unavailable metrics remain blank. Docker metrics are not collected.
+
+Available updates count packages in `upgrade_packages` from the last successful OPNsense firmware check in `/tmp/pkg_upgrade.json`. Run or schedule firmware checks in OPNsense to keep this cache current. Missing, unreadable or failed checks leave the count unavailable. This is a cached package count, not a check for major release upgrades; KeepUp does not install updates or trigger firmware checks.
 
 ### Windows client setup
 
