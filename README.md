@@ -33,6 +33,7 @@ For each supported server, KeepUp collects:
 - CPU load averages.
 - Disk usage and available space.
 - Whether the Docker daemon is running and how many containers are active.
+- Whether Nginx is running on Linux and the version of its running executable, when readable by the SSH user.
 - UFW status and rules when UFW is installed and accessible to the SSH user.
 
 ### Dashboard
@@ -100,6 +101,7 @@ The KeepUp host or containers must be able to reach each monitored server over S
 - Standard system tools such as `cat`, `awk`, `ip`, `uptime` and `df`.
 - `apt` on Debian, Ubuntu and Proxmox VE, or `pacman` on Arch Linux.
 - `docker` when Docker status should be collected.
+- `pgrep` for Nginx process detection on Linux. The version requires permission to execute the running binary through `/proc/<pid>/exe`.
 - `ufw status` when firewall status should be collected.
 
 These optional Docker and UFW values depend on their commands being installed and usable by the configured account.

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('page-content')
-<div class="page-container">
+<div class="page-container dashboard-page">
     <header class="page-header">
         <div>
             <h1>Dashboard</h1>
@@ -88,6 +88,7 @@
                             <th><button type="button" class="sort-button" data-sort-key="uptime" data-sort-type="number">Uptime<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
                             <th><button type="button" class="sort-button" data-sort-key="load" data-sort-type="number">CPU / load<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
                             <th><button type="button" class="sort-button" data-sort-key="docker" data-sort-type="number">Docker<i class="fas fa-sort sort-icon" aria-hidden="true"></i></button></th>
+                            <th scope="col">Nginx</th>
                             <th class="actions-column">Actions</th>
                         </tr>
                     </thead>
@@ -201,6 +202,15 @@
                                         <span class="muted">Not running</span>
                                     @endif
                                 </td>
+                                <td data-label="Nginx">
+                                    @if($monitor->nginx_running)
+                                        <span class="metric-value">Running · {{ $monitor->nginx_version ?? 'version unavailable' }}</span>
+                                    @elseif($monitor->nginx_running === false)
+                                        <span class="muted">Not running</span>
+                                    @else
+                                        <span class="muted">—</span>
+                                    @endif
+                                </td>
                                 <td data-label="Actions">
                                     <div class="monitor-actions">
                                         <button type="button" class="button secondary" data-action="refresh-monitor" data-id-monitor="{{ $monitor->id }}"><i class="fas fa-rotate"></i><span>Refresh</span></button>
@@ -214,7 +224,7 @@
                                 </td>
                             </tr>
                             <tr class="monitor-details-row" id="monitor-details-{{ $monitor->id }}" hidden>
-                                <td colspan="8">
+                                <td colspan="9">
                                     <div class="details-grid">
                                         <section>
                                             <h3>Connection</h3>
@@ -237,7 +247,7 @@
                             </tr>
                         @endforeach
                         <tr class="filtered-empty-row" hidden>
-                            <td colspan="8">
+                            <td colspan="9">
                                 <div class="filtered-empty-state"><i class="fas fa-filter-circle-xmark"></i>No monitors match the selected filters.</div>
                             </td>
                         </tr>

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Monitor;
 use App\Models\MonitorLastRefresh;
 use App\Models\WindowsDomain;
+use App\Services\NginxCollector;
 use App\Services\OpnsenseCollector;
 use App\Services\TelegramMonitorNotifier;
 use App\Services\WindowsDomainSynchronizer;
@@ -47,6 +48,7 @@ class MonitorServers extends Command
         TelegramMonitorNotifier $telegramNotifier,
         WindowsPowerShellCollector $windowsCollector,
         OpnsenseCollector $opnsenseCollector,
+        NginxCollector $nginxCollector,
         WindowsDomainSynchronizer $domainSynchronizer,
     )
     {
@@ -189,6 +191,8 @@ class MonitorServers extends Command
                     'docker_active_containers' => null,
                     'docker_active_container_names' => null,
                     'firewall_rules' => null,
+                    'nginx_running' => null,
+                    'nginx_version' => null,
                 ];
 
                 $process = Ssh::create($system['username'], $system['hostname_ip'])
@@ -262,6 +266,8 @@ class MonitorServers extends Command
                             }
                         }
                     }
+
+                    $result = array_replace($result, $nginxCollector->collect($process));
 
                     // Find out uptime and ip addresses
                     // Find out cpu load average
@@ -355,6 +361,8 @@ class MonitorServers extends Command
                     $system->docker_active_containers = null;
                     $system->docker_active_container_names = null;
                     $system->firewall_rules = null;
+                    $system->nginx_running = null;
+                    $system->nginx_version = null;
                 } else {
                     // Saving to database
                     $system->markCheckSuccessful();
@@ -368,6 +376,8 @@ class MonitorServers extends Command
                     $system->docker_daemon_running = $result['docker_daemon_running'];
                     $system->docker_active_containers = $result['docker_active_containers'];
                     $system->docker_active_container_names = json_encode($result['docker_active_container_names']);
+                    $system->nginx_running = $result['nginx_running'];
+                    $system->nginx_version = $result['nginx_version'];
                     $system->firewall_rules = json_encode($result['firewall_rules']);
                 }
 
@@ -397,6 +407,8 @@ class MonitorServers extends Command
                 $system->docker_daemon_running = null;
                 $system->docker_active_containers = null;
                 $system->docker_active_container_names = null;
+                $system->nginx_running = null;
+                $system->nginx_version = null;
                 $system->save();
 
                 $telegramNotifier->notify($system);

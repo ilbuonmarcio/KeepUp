@@ -19,6 +19,11 @@ class Monitor extends Model
 
     protected ?string $temporarySshKey = null;
 
+    protected function casts(): array
+    {
+        return ['nginx_running' => 'boolean'];
+    }
+
     protected static function booted(): void
     {
         static::updated(function (Monitor $monitor): void {
