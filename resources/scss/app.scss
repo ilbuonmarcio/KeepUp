@@ -1379,3 +1379,51 @@ textarea::placeholder {
         flex: 1 1 100%;
     }
 }
+
+.domain-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.domain-title h2 { margin: 0; }
+
+.domain-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.domain-toggle:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 5px;
+}
+
+.domain-toggle-track {
+    display: inline-flex;
+    align-items: center;
+    width: 38px;
+    height: 22px;
+    padding: 3px;
+    border-radius: 20px;
+    background: #dc2626;
+}
+
+.domain-toggle-track span {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.domain-toggle.is-enabled .domain-toggle-track { background: #16a34a; }
+.domain-toggle.is-enabled .domain-toggle-track span { transform: translateX(16px); }

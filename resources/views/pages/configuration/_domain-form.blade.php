@@ -6,7 +6,18 @@
     <section class="form-section">
         <div class="section-heading">
             <div>
-                <h2>{{ $isEditing ? $domain->name : 'Add Windows domain' }}</h2>
+                <div class="domain-title">
+                    <h2>{{ $isEditing ? $domain->name : 'Add Windows domain' }}</h2>
+                    @if($isEditing)
+                        <button type="submit" form="domain-enabled-{{ $domain->id }}"
+                                class="domain-toggle {{ $domain->enabled ? 'is-enabled' : 'is-disabled' }}"
+                                role="switch" aria-checked="{{ $domain->enabled ? 'true' : 'false' }}"
+                                aria-label="Enable {{ $domain->name }}">
+                            <span class="domain-toggle-track" aria-hidden="true"><span></span></span>
+                            <span>{{ $domain->enabled ? 'Enabled' : 'Disabled' }}</span>
+                        </button>
+                    @endif
+                </div>
                 <p>Discover enabled Active Directory computers over LDAP and monitor them over SSH.</p>
             </div>
             @if($isEditing)

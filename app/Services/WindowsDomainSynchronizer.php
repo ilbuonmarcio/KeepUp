@@ -14,6 +14,10 @@ class WindowsDomainSynchronizer
 
     public function sync(WindowsDomain $domain): int
     {
+        if (! $domain->enabled) {
+            return 0;
+        }
+
         try {
             $computers = $this->discovery->discover($domain);
             $hostnames = collect($computers)->pluck('hostname')->all();

@@ -11,7 +11,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $monitors = Monitor::query()
+        $monitors = Monitor::query()->enabled()
             ->with([
                 'windowsDomain:id,name',
                 'labels' => fn ($query) => $query
@@ -23,13 +23,13 @@ class DashboardController extends Controller
             ->get();
 
         $labels = Label::query()
-            ->whereHas('monitors')
+            ->whereHas('monitors', fn ($query) => $query->enabled())
             ->orderByRaw('LOWER(name) ASC')
             ->orderBy('name')
             ->get();
 
-        $windowsDomains = WindowsDomain::query()
-            ->whereHas('monitors')
+        $windowsDomains = WindowsDomain::query()->where('enabled', true)
+            ->whereHas('monitors', fn ($query) => $query->enabled())
             ->orderByRaw('LOWER(name) ASC')
             ->orderBy('name')
             ->get(['id', 'name']);

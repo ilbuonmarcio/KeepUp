@@ -48,6 +48,15 @@ class ConfigurationController extends Controller
         return $response;
     }
 
+    public function setEnabled(Request $request, WindowsDomain $domain)
+    {
+        $validated = $request->validate(['enabled' => ['required', 'boolean']]);
+        $domain->update(['enabled' => $validated['enabled']]);
+
+        return redirect()->route('configuration.index')
+            ->with('status', $domain->name.($domain->enabled ? ' enabled.' : ' disabled.'));
+    }
+
     public function destroy(WindowsDomain $domain)
     {
         $name = $domain->name;
@@ -188,6 +197,11 @@ class ConfigurationController extends Controller
         WindowsDomainSynchronizer $synchronizer,
         string $successMessage,
     ) {
+        if (! $domain->enabled) {
+            return redirect()->route('configuration.index')
+                ->with('status', 'Configuration saved. This domain is disabled; discovery was skipped.');
+        }
+
         try {
             $count = $synchronizer->sync($domain);
 

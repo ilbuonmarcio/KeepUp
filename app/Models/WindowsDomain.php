@@ -14,9 +14,12 @@ class WindowsDomain extends Model
 
     protected $guarded = [];
 
+    protected $attributes = ['enabled' => true];
+
     protected function casts(): array
     {
         return [
+            'enabled' => 'boolean',
             'discovery_password' => 'encrypted',
             'monitor_password' => 'encrypted',
             'last_discovered_at' => 'datetime',

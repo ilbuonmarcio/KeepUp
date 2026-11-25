@@ -31,11 +31,16 @@
 
     @foreach($domains as $domain)
         <div class="panel form-panel domain-panel">
+            <form id="domain-enabled-{{ $domain->id }}" method="post" action="{{ route('configuration.domains.enabled', $domain) }}">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="enabled" value="{{ $domain->enabled ? '0' : '1' }}">
+            </form>
             @include('pages.configuration._domain-form', ['domain' => $domain])
             <div class="domain-secondary-actions">
                 <form method="post" action="{{ route('configuration.domains.sync', $domain) }}">
                     @csrf
-                    <button class="button secondary" type="submit"><i class="fas fa-rotate"></i>Synchronize now</button>
+                    <button class="button secondary" type="submit" @disabled(! $domain->enabled)><i class="fas fa-rotate"></i>Synchronize now</button>
                 </form>
                 <form method="post" action="{{ route('configuration.domains.destroy', $domain) }}" onsubmit="return confirm('Remove this domain and all of its discovered monitors?')">
                     @csrf

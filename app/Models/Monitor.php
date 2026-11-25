@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -48,6 +49,14 @@ class Monitor extends Model
         if (! $isStillUsed && ! $isUsedByDomain) {
             Storage::disk('private_keys')->delete($filename);
         }
+    }
+
+    public function scopeEnabled(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): void {
+            $query->whereNull('windows_domain_id')
+                ->orWhereHas('windowsDomain', fn (Builder $domain) => $domain->where('enabled', true));
+        });
     }
 
     public function windowsDomain(): BelongsTo

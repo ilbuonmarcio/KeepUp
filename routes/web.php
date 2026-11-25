@@ -14,6 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ConfigurationController::class, 'index'])->name('configuration.index');
         Route::post('/windows-domains', [ConfigurationController::class, 'store'])->name('configuration.domains.store');
         Route::put('/windows-domains/{domain}', [ConfigurationController::class, 'update'])->name('configuration.domains.update');
+        Route::patch('/windows-domains/{domain}/enabled', [ConfigurationController::class, 'setEnabled'])->name('configuration.domains.enabled');
         Route::delete('/windows-domains/{domain}', [ConfigurationController::class, 'destroy'])->name('configuration.domains.destroy');
         Route::post('/windows-domains/{domain}/sync', [ConfigurationController::class, 'sync'])->name('configuration.domains.sync');
     });

@@ -85,6 +85,8 @@ class MonitorController extends Controller
 
     public function refresh(Monitor $monitor): JsonResponse
     {
+        abort_unless(Monitor::query()->enabled()->whereKey($monitor->getKey())->exists(), 403);
+
         dispatch(new RunMonitorOnDemand($monitor->getKey()));
 
         return response()->json(['status' => true], 202);

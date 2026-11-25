@@ -59,7 +59,7 @@ class MonitorServers extends Command
         }
 
         if ($this->option('monitor') === null && ! $this->option('skip-windows-domain')) {
-            WindowsDomain::query()->each(function (WindowsDomain $domain) use ($domainSynchronizer): void {
+            WindowsDomain::query()->where('enabled', true)->each(function (WindowsDomain $domain) use ($domainSynchronizer): void {
                 $this->line("Discovering Windows domain {$domain->name}...");
                 try {
                     $count = $domainSynchronizer->sync($domain);
@@ -74,12 +74,12 @@ class MonitorServers extends Command
             });
         }
 
-        $systems = Monitor::query()
+        $systems = Monitor::query()->enabled()
             ->when($this->option('monitor') !== null, fn ($query) => $query->whereKey($this->option('monitor')))
             ->get();
 
         if ($this->option('monitor') !== null && $systems->isEmpty()) {
-            $this->error('The requested monitor does not exist.');
+            $this->error('The requested monitor does not exist or its domain is disabled.');
 
             return self::FAILURE;
         }
