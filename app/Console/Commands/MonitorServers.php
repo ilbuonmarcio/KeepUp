@@ -14,6 +14,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Spatie\Ssh\Ssh;
 use Throwable;
@@ -27,7 +28,10 @@ class MonitorServers extends Command
      */
     protected $signature = 'app:monitor
                             {--force : Force the operation to run}
-                            {--monitor= : Only scan the monitor with this ID}';
+                            {--monitor= : Only scan the monitor with this ID}
+                            {--skip-windows-domain : Skip Windows domain discovery and synchronization}
+                            {--concurrency=1 : Maximum number of servers to check at once}
+                            {--no-refresh : Internal worker option to skip recording scan completion}';
 
     /**
      * The console command description.
@@ -46,8 +50,17 @@ class MonitorServers extends Command
         WindowsDomainSynchronizer $domainSynchronizer,
     )
     {
-        if ($this->option('monitor') === null) {
+        $concurrency = filter_var($this->option('concurrency'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        if ($concurrency === false) {
+            $this->error('Concurrency must be a positive integer.');
+
+            return self::INVALID;
+        }
+
+        if ($this->option('monitor') === null && ! $this->option('skip-windows-domain')) {
             WindowsDomain::query()->each(function (WindowsDomain $domain) use ($domainSynchronizer): void {
+                $this->line("Discovering Windows domain {$domain->name}...");
                 try {
                     $count = $domainSynchronizer->sync($domain);
                     Log::channel('monitors_stacked')->info("Windows domain [{$domain->name}] synchronized", [
@@ -69,6 +82,81 @@ class MonitorServers extends Command
             $this->error('The requested monitor does not exist.');
 
             return self::FAILURE;
+        }
+
+        if ($concurrency > 1 && $this->option('monitor') === null) {
+            $failed = false;
+
+            $pending = $systems->getIterator();
+            $active = [];
+            $completed = 0;
+            $lastProgress = microtime(true);
+            $this->info("Checking {$systems->count()} monitors with concurrency {$concurrency}.");
+
+            try {
+                while ($pending->valid() || $active !== []) {
+                    while ($pending->valid() && count($active) < $concurrency) {
+                        $system = $pending->current();
+                        $pending->next();
+                        $monitorId = $system->getKey();
+                        $command = [PHP_BINARY, base_path('artisan'), 'app:monitor',
+                            '--monitor='.$monitorId, '--no-refresh'];
+
+                        if ($this->option('force')) {
+                            $command[] = '--force';
+                        }
+
+                        $this->line("Starting monitor {$monitorId} ({$system->name}).");
+                        // Each SSH request retains its own 100-second timeout.
+                        $active[$monitorId] = Process::path(base_path())->forever()->start(
+                            $command,
+                            function (string $type, string $output) use ($monitorId): void {
+                                $this->output->write("[Monitor {$monitorId}] ".$output);
+                            },
+                        );
+                    }
+
+                    foreach ($active as $monitorId => $process) {
+                        if ($process->running()) {
+                            continue;
+                        }
+
+                        $result = $process->wait();
+                        unset($active[$monitorId]);
+                        $completed++;
+
+                        if ($result->failed()) {
+                            $failed = true;
+                            $this->error("Monitor {$monitorId} worker failed (exit {$result->exitCode()}).");
+                        } else {
+                            $this->line("Finished monitor {$monitorId} ({$completed}/{$systems->count()}).");
+                        }
+                    }
+
+                    if (microtime(true) - $lastProgress >= 10) {
+                        $this->line("Completed {$completed}/{$systems->count()}; waiting on monitors: ".implode(', ', array_keys($active)));
+                        $lastProgress = microtime(true);
+                    }
+
+                    if ($active !== []) {
+                        usleep(100000);
+                    }
+                }
+            } finally {
+                foreach ($active as $process) {
+                    $process->stop();
+                }
+            }
+
+            if ($failed) {
+                return self::FAILURE;
+            }
+
+            if (! $this->option('no-refresh')) {
+                (new MonitorLastRefresh)->save();
+            }
+
+            return self::SUCCESS;
         }
 
         foreach ($systems as $system) {
@@ -318,8 +406,9 @@ class MonitorServers extends Command
         }
 
         // Add refresh status update
-        $refresh = new MonitorLastRefresh;
-        $refresh->save();
+        if (! $this->option('no-refresh')) {
+            (new MonitorLastRefresh)->save();
+        }
 
         return self::SUCCESS;
     }

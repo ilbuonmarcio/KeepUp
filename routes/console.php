@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('app:monitor')->dailyAt('08:00');
+Schedule::command('app:monitor --concurrency=5')->dailyAt('08:00');

@@ -222,6 +222,29 @@ docker compose down
 
 The database and encrypted SSH keys survive a normal `docker compose down`. Running `docker compose down --volumes` permanently deletes both named volumes and their data.
 
+## Parallel monitoring
+
+Run server checks with up to five separate PHP processes at once:
+
+```bash
+php artisan app:monitor --concurrency=5
+# Include recently checked servers:
+php artisan app:monitor --concurrency=5 --force
+# Skip Windows domain discovery and synchronization:
+php artisan app:monitor --concurrency=5 --skip-windows-domain
+```
+
+The daily scheduled scan at 08:00 uses `--concurrency=5`.
+The command default and dashboard scans use `--concurrency=1` (sequential).
+No additional queue workers are required. Each server's SSH checks remain sequential.
+A new server starts whenever a worker finishes. The command prints worker progress
+and reports active monitor IDs every ten seconds while waiting.
+Domain discovery runs once before the workers unless `--skip-windows-domain` is set.
+This flag also works in sequential mode; existing Windows monitors are still checked.
+The refresh timestamp is recorded
+only after all workers finish successfully. Individual connection failures retain the
+existing monitor failure handling. A worker process failure makes the command fail.
+
 ## Potential future additions
 
 - Proxmox API integration to automatically discover, add and manage virtual machines and LXC containers.
